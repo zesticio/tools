@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="settings" />
+        <module name="core" />
+        <module name="system" />
+        <module name="dispatch" />
+        <module name="log" />
+        <module name="json" />
+        <module name="socket" />
+        <module name="crypto" />
+        <module name="coin" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="amqp" target="11" />
+      <module name="jredis" target="11" />
+      <module name="utils" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="amqp" options="" />
+      <module name="coin" options="" />
+      <module name="core" options="" />
+      <module name="crypto" options="" />
+      <module name="dispatch" options="" />
+      <module name="jredis" options="-parameters" />
+      <module name="json" options="" />
+      <module name="log" options="" />
+      <module name="settings" options="" />
+      <module name="socket" options="" />
+      <module name="system" options="" />
+      <module name="utils" options="" />
+    </option>
+  </component>
+</project>
