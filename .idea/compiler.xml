@@ -14,6 +14,7 @@
         <module name="log" />
         <module name="json" />
         <module name="socket" />
+        <module name="buffer" />
         <module name="crypto" />
         <module name="coin" />
       </profile>

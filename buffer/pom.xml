@@ -9,11 +9,17 @@
         <version>1.0</version>
     </parent>
     <artifactId>buffer</artifactId>
-    <packaging>pom</packaging>
+    <name>buffer</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
-
+    <dependencies>
+        <dependency>
+            <groupId>com.zestic</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
 </project>
