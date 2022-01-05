@@ -26,9 +26,9 @@ import java.io.IOException;
  * @author <a href="https://www.zestic.io">Deebendu Kumar</a>
  */
 public class IntegerCodec implements Codec<Integer> {
-    
+
     public static final IntegerCodec INSTANCE = new IntegerCodec();
-    
+
     public void encode(Integer object, DataOutput dataOut) throws IOException {
         dataOut.writeInt(object);
     }
@@ -41,9 +41,9 @@ public class IntegerCodec implements Codec<Integer> {
         return 4;
     }
 
-    
+
     /*
-     * @return the source object since integers are immutable. 
+     * @return the source object since integers are immutable.
      */
     public Integer deepCopy(Integer source) {
         return source;
@@ -56,6 +56,7 @@ public class IntegerCodec implements Codec<Integer> {
     public boolean isEstimatedSizeSupported() {
         return true;
     }
+
     public int estimatedSize(Integer object) {
         return 4;
     }
