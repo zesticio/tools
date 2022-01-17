@@ -11,6 +11,7 @@
         <module name="core" />
         <module name="system" />
         <module name="dispatch" />
+        <module name="retrofit" />
         <module name="log" />
         <module name="json" />
         <module name="socket" />

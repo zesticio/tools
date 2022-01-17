@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.github.yungyu16.spring.http.RetrofitClientAutoConfiguration,\
+  com.github.yungyu16.spring.stub.StubBeanAutoConfiguration
