@@ -10,7 +10,6 @@
     </parent>
     <artifactId>buffer</artifactId>
     <name>buffer</name>
-
     <dependencies>
         <dependency>
             <groupId>com.zestic</groupId>
