@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class HelloServiceTest {
+
     @Autowired
     private HelloService1 helloService1;
     @Autowired

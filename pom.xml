@@ -20,9 +20,12 @@
         <module>buffer</module>
         <module>dispatch</module>
         <module>retrofit</module>
+        <module>common</module>
     </modules>
 
     <properties>
+        <tests.skip>true</tests.skip>
+
         <copyright>2010 - 2021</copyright>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
         <maven.compiler.source>11</maven.compiler.source>
@@ -39,6 +42,10 @@
         <jackson.datatype.version>2.5.1</jackson.datatype.version>
         <asm-version>3.1</asm-version>
         <osgi-version>4.2.0</osgi-version>
+
+        <spring-boot.version>2.0.8.RELEASE</spring-boot.version>
+        <okhttp.version>4.0.1</okhttp.version>
+        <retrofit.version>2.9.0</retrofit.version>
     </properties>
 
     <developers>

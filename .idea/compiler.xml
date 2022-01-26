@@ -12,6 +12,7 @@
         <module name="system" />
         <module name="dispatch" />
         <module name="retrofit" />
+        <module name="common" />
         <module name="log" />
         <module name="json" />
         <module name="socket" />
