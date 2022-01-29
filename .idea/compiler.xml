@@ -8,39 +8,42 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="settings" />
+        <module name="dispatch" />
+        <module name="log" />
+        <module name="jredis" />
+        <module name="crypto" />
         <module name="core" />
         <module name="system" />
-        <module name="dispatch" />
         <module name="retrofit" />
         <module name="common" />
-        <module name="log" />
         <module name="json" />
         <module name="socket" />
         <module name="buffer" />
-        <module name="crypto" />
         <module name="coin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="amqp" target="11" />
       <module name="excel" target="11" />
-      <module name="jredis" target="11" />
       <module name="utils" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="amqp" options="" />
-      <module name="coin" options="" />
-      <module name="core" options="" />
-      <module name="crypto" options="" />
-      <module name="dispatch" options="" />
+      <module name="buffer" options="-parameters" />
+      <module name="coin" options="-parameters" />
+      <module name="common" options="-parameters" />
+      <module name="core" options="-parameters" />
+      <module name="crypto" options="-parameters" />
+      <module name="dispatch" options="-parameters" />
       <module name="jredis" options="-parameters" />
-      <module name="json" options="" />
-      <module name="log" options="" />
-      <module name="settings" options="" />
-      <module name="socket" options="" />
-      <module name="system" options="" />
+      <module name="json" options="-parameters" />
+      <module name="log" options="-parameters" />
+      <module name="retrofit" options="-parameters" />
+      <module name="settings" options="-parameters" />
+      <module name="socket" options="-parameters" />
+      <module name="system" options="-parameters" />
       <module name="utils" options="" />
     </option>
   </component>
