@@ -14,12 +14,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * 自行保证状态的线程安全
- * CreatedDate: 2020/11/24
- * Author: songjialin
  */
 public abstract class AbstractInvocationDispatcher<ANNOTATION_TYPE extends Annotation, ATTACHMENT> {
-    //TODO 弱引用？
+
     private volatile Map<Method, ATTACHMENT> methodAttachments;
 
     protected final ATTACHMENT getAttachmentOrNull(@NonNull Method key) {

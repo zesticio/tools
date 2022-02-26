@@ -26,12 +26,12 @@ public class StubDefPostProcessor extends BeanDefinitionRegistryPostProcessorAda
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         List<String> pkgList = AutoConfigurationPackages.get(beanFactory);
         if (CollectionUtils.isEmpty(pkgList)) {
-            log.debug("待扫描的包路径为空...跳过...");
+            log.debug("The package path to scan is empty...skip...");
             return;
         }
         ClassPathBeanDefinitionScanner scanner = new ClassPathStubBeanDefinitionScanner(registry, environment);
         int bdCnt = scanner.scan(StringUtils.toStringArray(pkgList));
-        log.debug("本轮从 {} 中扫描到 {} 个SpringStub", pkgList, bdCnt);
+        log.debug("Scanned {} SpringStubs from {} in this round", pkgList, bdCnt);
     }
 
     @Override

@@ -56,7 +56,7 @@ public class StubBeanDefinitionRegistrar implements ImportBeanDefinitionRegistra
             scanner.addIncludeFilter((metadataReader, metadataReaderFactory) -> proxyStubFilter.match(metadataReader, metadataReaderFactory) && markAnnotationFilter.match(metadataReader, metadataReaderFactory));
         }
         int bdCnt = scanner.scan(StringUtils.toStringArray(pkgList));
-        log.debug("本轮从{}中扫描到{}个SpringStub", pkgList, bdCnt);
+        log.debug("Scanned {} SpringStubs from {} in this round", pkgList, bdCnt);
     }
 
     @Override

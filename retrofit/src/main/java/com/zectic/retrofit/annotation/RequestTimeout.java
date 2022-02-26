@@ -15,18 +15,11 @@ public @interface RequestTimeout {
 
     /**
      * read timeout
-     * -1=默认值
-     * 单位秒
-     *
      * @return
      */
     int readTimeout() default -1;
 
     /**
-     * 写超时
-     * -1=默认值
-     * 单位秒
-     *
      * @return
      */
     int writeTimeout() default -1;

@@ -20,7 +20,7 @@ public class StubBeanPostProcessor extends InstantiationAwareBeanPostProcessorAd
             return null;
         }
         if (!type.isInterface()) {
-            throw new BeanCreationNotAllowedException(name, type.getName() + " 不是Interface");
+            throw new BeanCreationNotAllowedException(name, type.getName() + " Not interface");
         }
         StubProxyFactory stubProxyFactory = getStubProxyFactory(proxyStub);
         return stubProxyFactory.createProxy(type, proxyStub);

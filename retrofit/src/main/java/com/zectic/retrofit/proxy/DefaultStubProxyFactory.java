@@ -36,7 +36,7 @@ public class DefaultStubProxyFactory implements StubProxyFactory, BeanFactoryAwa
         if (dispatcherType != AbstractInvocationDispatcher.class) {
             handler = beanFactory.getBean(dispatcherType);
         } else {
-            throw new BeanCreationException(type.getName() + " 没有指定InvocationDispatcher");
+            throw new BeanCreationException(type.getName() + " InvocationDispatcher");
         }
         return (AbstractInvocationDispatcher) handler;
     }

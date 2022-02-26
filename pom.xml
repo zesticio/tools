@@ -60,6 +60,8 @@
         <okhttp.version>4.0.1</okhttp.version>
         <retrofit.version>2.9.0</retrofit.version>
         <spring-cloud.version>2020.0.0</spring-cloud.version>
+
+        <springfox.swagger2.version>2.9.2</springfox.swagger2.version>
     </properties>
 
     <dependencyManagement>

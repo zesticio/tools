@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 public class RequestTimeoutInterceptor extends BaseMethodAnnotationInterceptor<RequestTimeout> {
+
     public RequestTimeoutInterceptor() {
         super(RequestTimeout.class);
     }

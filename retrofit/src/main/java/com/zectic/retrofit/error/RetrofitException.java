@@ -1,6 +1,7 @@
 package com.zectic.retrofit.error;
 
 public class RetrofitException extends RuntimeException {
+
     public RetrofitException() {
         super();
     }
