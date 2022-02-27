@@ -32,13 +32,16 @@
 
     <properties>
         <tests.skip>true</tests.skip>
-
-        <copyright>2010 - 2021</copyright>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.testSource>11</maven.compiler.testSource>
         <maven.compiler.testTarget>11</maven.compiler.testTarget>
+        <java.version>11</java.version>
+
+        <copyright>2010 - 2021</copyright>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
         <junit.version>4.13.2</junit.version>
         <lombok.version>1.18.22</lombok.version>
         <jna.version>5.9.0</jna.version>
@@ -64,6 +67,62 @@
         <springfox.swagger2.version>2.9.2</springfox.swagger2.version>
     </properties>
 
+    <developers>
+        <developer>
+            <id>kumar</id>
+            <name>Deebendu Kumar</name>
+            <email>deebendu.kumar@zestic.in</email>
+            <organization>Zestic IT Solutions Private Limited</organization>
+            <organizationUrl>https://www.zestc.io/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/zesticio/tools</url>
+        <connection>https://github.com/zesticio/tools.git</connection>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/zesticio/tools/issues</url>
+    </issueManagement>
+
+    <repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -75,16 +134,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <developers>
-        <developer>
-            <id>kumar</id>
-            <name>Deebendu Kumar</name>
-            <email>deebendu.kumar@zestic.in</email>
-            <organization>Zestic IT Solutions Private Limited</organization>
-            <organizationUrl>https://www.zestc.io/</organizationUrl>
-        </developer>
-    </developers>
 
     <dependencies>
         <dependency>

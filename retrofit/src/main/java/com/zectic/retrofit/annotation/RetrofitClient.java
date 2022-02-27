@@ -1,14 +1,17 @@
 package com.zectic.retrofit.annotation;
 
+import com.zectic.retrofit.config.RetrofitAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 import javax.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
+@HttpInterceptor
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HttpInterceptor {
+@Import({RetrofitAutoConfiguration.class})
+public @interface RetrofitClient {
 
     /**
      * Default message.
