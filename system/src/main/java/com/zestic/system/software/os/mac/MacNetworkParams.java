@@ -25,7 +25,6 @@ package com.zestic.system.software.os.mac;
 
 import com.sun.jna.Native;
 import com.sun.jna.ptr.PointerByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.jna.platform.mac.SystemB;
 import com.zestic.system.jna.platform.unix.CLibrary;
@@ -33,6 +32,7 @@ import com.zestic.system.jna.platform.unix.CLibrary.Addrinfo;
 import com.zestic.system.software.common.AbstractNetworkParams;
 import com.zestic.system.util.ExecutingCommand;
 import com.zestic.system.util.ParseUtil;
+import org.apache.log4j.Priority;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -43,9 +43,10 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
 /*
  * MacNetworkParams class.
  */
-@ThreadSafe final class MacNetworkParams extends AbstractNetworkParams {
+@ThreadSafe
+final class MacNetworkParams extends AbstractNetworkParams {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(MacNetworkParams.class);
 
     private static final SystemB SYS = SystemB.INSTANCE;
 
@@ -53,22 +54,22 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
 
     private static final String DEFAULT_GATEWAY = "default";
 
-    @Override public String getDomainName() {
+    @Override
+    public String getDomainName() {
         Addrinfo hint = new Addrinfo();
         hint.ai_flags = CLibrary.AI_CANONNAME;
         String hostname = "";
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            LOG.error("Unknown host exception when getting address of local host: {}",
-                e.getMessage());
+            LOG.error("Unknown host exception when getting address of local host: {}" + e.getMessage());
             return "";
         }
         PointerByReference ptr = new PointerByReference();
         int res = SYS.getaddrinfo(hostname, null, hint, ptr);
         if (res > 0) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Failed getaddrinfo(): {}", SYS.gai_strerror(res));
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.error("Failed getaddrinfo(): {}" + SYS.gai_strerror(res));
             }
             return "";
         }
@@ -78,7 +79,8 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
         return canonname;
     }
 
-    @Override public String getHostName() {
+    @Override
+    public String getHostName() {
         byte[] hostnameBuffer = new byte[HOST_NAME_MAX + 1];
         if (0 != SYS.gethostname(hostnameBuffer, hostnameBuffer.length)) {
             return super.getHostName();
@@ -86,11 +88,13 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
         return Native.toString(hostnameBuffer);
     }
 
-    @Override public String getIpv4DefaultGateway() {
+    @Override
+    public String getIpv4DefaultGateway() {
         return searchGateway(ExecutingCommand.runNative("route -n get default"));
     }
 
-    @Override public String getIpv6DefaultGateway() {
+    @Override
+    public String getIpv6DefaultGateway() {
         List<String> lines = ExecutingCommand.runNative("netstat -nr");
         boolean v6Table = false;
         for (String line : lines) {

@@ -33,7 +33,6 @@ import com.sun.jna.platform.mac.IOKit;
 import com.sun.jna.platform.mac.IOKit.IOIterator;
 import com.sun.jna.platform.mac.IOKit.IORegistryEntry;
 import com.sun.jna.platform.mac.IOKitUtil;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.mac.disk.Fsstat;
 import com.zestic.system.hardware.HWDiskStore;
@@ -48,12 +47,13 @@ import java.util.stream.Collectors;
 /*
  * Mac hard disk implementation.
  */
-@ThreadSafe public final class MacHWDiskStore extends AbstractHWDiskStore {
+@ThreadSafe
+public final class MacHWDiskStore extends AbstractHWDiskStore {
 
     private static final CoreFoundation CF = CoreFoundation.INSTANCE;
     private static final DiskArbitration DA = DiskArbitration.INSTANCE;
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(MacHWDiskStore.class);
 
     private long reads = 0L;
     private long readBytes = 0L;
@@ -65,7 +65,7 @@ import java.util.stream.Collectors;
     private List<HWPartition> partitionList;
 
     private MacHWDiskStore(String name, String model, String serial, long size,
-        DASessionRef session, Map<String, String> mountPointMap, Map<CFKey, CFStringRef> cfKeyMap) {
+                           DASessionRef session, Map<String, String> mountPointMap, Map<CFKey, CFStringRef> cfKeyMap) {
         super(name, model, serial, size);
         updateDiskStats(session, mountPointMap, cfKeyMap);
     }
@@ -97,7 +97,7 @@ import java.util.stream.Collectors;
                 Boolean whole = media.getBooleanProperty("Whole");
                 if (whole != null && whole) {
                     DADiskRef disk =
-                        DA.DADiskCreateFromIOMedia(CF.CFAllocatorGetDefault(), session, media);
+                            DA.DADiskCreateFromIOMedia(CF.CFAllocatorGetDefault(), session, media);
                     bsdNames.add(DA.DADiskGetBSDName(disk));
                     disk.release();
                 }
@@ -134,12 +134,12 @@ import java.util.stream.Collectors;
                     if (!"Disk Image".equals(model)) {
                         CFStringRef modelNameRef = CFStringRef.createCFString(model);
                         CFMutableDictionaryRef propertyDict =
-                            CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
-                                null, null);
+                                CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
+                                        null, null);
                         propertyDict.setValue(cfKeyMap.get(CFKey.MODEL), modelNameRef);
                         CFMutableDictionaryRef matchingDict =
-                            CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
-                                null, null);
+                                CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
+                                        null, null);
                         matchingDict.setValue(cfKeyMap.get(CFKey.IO_PROPERTY_MATCH), propertyDict);
 
                         // search for all IOservices that match the model
@@ -175,8 +175,8 @@ import java.util.stream.Collectors;
                     continue;
                 }
                 HWDiskStore diskStore =
-                    new MacHWDiskStore(bsdName, model.trim(), serial.trim(), size, session,
-                        mountPointMap, cfKeyMap);
+                        new MacHWDiskStore(bsdName, model.trim(), serial.trim(), size, session,
+                                mountPointMap, cfKeyMap);
                 diskList.add(diskStore);
             }
         }
@@ -203,39 +203,48 @@ import java.util.stream.Collectors;
         return keyMap;
     }
 
-    @Override public long getReads() {
+    @Override
+    public long getReads() {
         return reads;
     }
 
-    @Override public long getReadBytes() {
+    @Override
+    public long getReadBytes() {
         return readBytes;
     }
 
-    @Override public long getWrites() {
+    @Override
+    public long getWrites() {
         return writes;
     }
 
-    @Override public long getWriteBytes() {
+    @Override
+    public long getWriteBytes() {
         return writeBytes;
     }
 
-    @Override public long getCurrentQueueLength() {
+    @Override
+    public long getCurrentQueueLength() {
         return currentQueueLength;
     }
 
-    @Override public long getTransferTime() {
+    @Override
+    public long getTransferTime() {
         return transferTime;
     }
 
-    @Override public long getTimeStamp() {
+    @Override
+    public long getTimeStamp() {
         return timeStamp;
     }
 
-    @Override public List<HWPartition> getPartitions() {
+    @Override
+    public List<HWPartition> getPartitions() {
         return this.partitionList;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         // Open a session and create CFStrings
         DASessionRef session = DA.DASessionCreate(CF.CFAllocatorGetDefault());
         if (session == null) {
@@ -255,7 +264,7 @@ import java.util.stream.Collectors;
     }
 
     private boolean updateDiskStats(DASessionRef session, Map<String, String> mountPointMap,
-        Map<CFKey, CFStringRef> cfKeyMap) {
+                                    Map<CFKey, CFStringRef> cfKeyMap) {
         // Now look up the device using the BSD Name to get its
         // statistics
         String bsdName = getName();
@@ -274,7 +283,7 @@ import java.util.stream.Collectors;
                     if (drive.conformsTo("IOMedia")) {
                         IORegistryEntry parent = drive.getParentEntry("IOService");
                         if (parent != null && (parent.conformsTo("IOBlockStorageDriver")
-                            || parent.conformsTo("AppleAPFSContainerScheme"))) {
+                                || parent.conformsTo("AppleAPFSContainerScheme"))) {
                             CFMutableDictionaryRef properties = parent.createCFProperties();
                             // We now have a properties object with the
                             // statistics we need on it. Fetch them
@@ -300,9 +309,9 @@ import java.util.stream.Collectors;
                             // Total time is in nanoseconds. Add read+write
                             // and convert total to ms
                             final Pointer readTimeResult =
-                                statistics.getValue(cfKeyMap.get(CFKey.READ_TIME));
+                                    statistics.getValue(cfKeyMap.get(CFKey.READ_TIME));
                             final Pointer writeTimeResult =
-                                statistics.getValue(cfKeyMap.get(CFKey.WRITE_TIME));
+                                    statistics.getValue(cfKeyMap.get(CFKey.WRITE_TIME));
                             // AppleAPFSContainerScheme does not have timer statistics
                             if (readTimeResult != null && writeTimeResult != null) {
                                 stat.setPointer(readTimeResult);
@@ -316,8 +325,8 @@ import java.util.stream.Collectors;
                         } else {
                             // This is normal for FileVault drives, Fusion
                             // drives, and other virtual bsd names
-                            LOG.debug("Unable to find block storage driver properties for {}",
-                                bsdName);
+                            LOG.debug("Unable to find block storage driver properties for {}" +
+                                    bsdName);
                         }
                         // Now get partitions for this disk.
                         List<HWPartition> partitions = new ArrayList<>();
@@ -333,13 +342,13 @@ import java.util.stream.Collectors;
                         CFBooleanRef cfFalse = new CFBooleanRef(result);
                         // create a matching dict for BSD Unit
                         CFMutableDictionaryRef propertyDict =
-                            CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
-                                null, null);
+                                CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
+                                        null, null);
                         propertyDict.setValue(cfKeyMap.get(CFKey.BSD_UNIT), bsdUnit);
                         propertyDict.setValue(cfKeyMap.get(CFKey.WHOLE), cfFalse);
                         matchingDict =
-                            CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
-                                null, null);
+                                CF.CFDictionaryCreateMutable(CF.CFAllocatorGetDefault(), new CFIndex(0),
+                                        null, null);
                         matchingDict.setValue(cfKeyMap.get(CFKey.IO_PROPERTY_MATCH), propertyDict);
 
                         // search for IOservices that match the BSD Unit
@@ -352,7 +361,7 @@ import java.util.stream.Collectors;
                         if (serviceIterator != null) {
                             // Iterate disks
                             IORegistryEntry sdService =
-                                IOKit.INSTANCE.IOIteratorNext(serviceIterator);
+                                    IOKit.INSTANCE.IOIteratorNext(serviceIterator);
                             while (sdService != null) {
                                 // look up the BSD Name
                                 String partBsdName = sdService.getStringProperty("BSD Name");
@@ -361,17 +370,17 @@ import java.util.stream.Collectors;
                                 // Get the DiskArbitration dictionary for
                                 // this partition
                                 DADiskRef disk =
-                                    DA.DADiskCreateFromBSDName(CF.CFAllocatorGetDefault(), session,
-                                        partBsdName);
+                                        DA.DADiskCreateFromBSDName(CF.CFAllocatorGetDefault(), session,
+                                                partBsdName);
                                 if (disk != null) {
                                     CFDictionaryRef diskInfo = DA.DADiskCopyDescription(disk);
                                     if (diskInfo != null) {
                                         // get volume name from its key
                                         result =
-                                            diskInfo.getValue(cfKeyMap.get(CFKey.DA_MEDIA_NAME));
+                                                diskInfo.getValue(cfKeyMap.get(CFKey.DA_MEDIA_NAME));
                                         type = CFUtil.cfPointerToString(result);
                                         result =
-                                            diskInfo.getValue(cfKeyMap.get(CFKey.DA_VOLUME_NAME));
+                                                diskInfo.getValue(cfKeyMap.get(CFKey.DA_VOLUME_NAME));
                                         if (result == null) {
                                             name = type;
                                         } else {
@@ -387,9 +396,9 @@ import java.util.stream.Collectors;
                                 Integer bsdMinor = sdService.getIntegerProperty("BSD Minor");
                                 String uuid = sdService.getStringProperty("UUID");
                                 partitions.add(new HWPartition(partBsdName, name, type,
-                                    uuid == null ? Constants.UNKNOWN : uuid,
-                                    size == null ? 0L : size, bsdMajor == null ? 0 : bsdMajor,
-                                    bsdMinor == null ? 0 : bsdMinor, mountPoint));
+                                        uuid == null ? Constants.UNKNOWN : uuid,
+                                        size == null ? 0L : size, bsdMajor == null ? 0 : bsdMajor,
+                                        bsdMinor == null ? 0 : bsdMinor, mountPoint));
                                 // iterate
                                 sdService.release();
                                 sdService = IOKit.INSTANCE.IOIteratorNext(serviceIterator);
@@ -397,13 +406,13 @@ import java.util.stream.Collectors;
                             serviceIterator.release();
                         }
                         this.partitionList = Collections.unmodifiableList(
-                            partitions.stream().sorted(Comparator.comparing(HWPartition::getName))
-                                .collect(Collectors.toList()));
+                                partitions.stream().sorted(Comparator.comparing(HWPartition::getName))
+                                        .collect(Collectors.toList()));
                         if (parent != null) {
                             parent.release();
                         }
                     } else {
-                        LOG.error("Unable to find IOMedia device or parent for {}", bsdName);
+                        LOG.error("Unable to find IOMedia device or parent for {}" + bsdName);
                     }
                     drive.release();
                 }
@@ -422,14 +431,14 @@ import java.util.stream.Collectors;
 
         STATISTICS("Statistics"), //
         READ_OPS("Operations (Read)"), READ_BYTES("Bytes (Read)"), READ_TIME(
-            "Total Time (Read)"), //
+                "Total Time (Read)"), //
         WRITE_OPS("Operations (Write)"), WRITE_BYTES("Bytes (Write)"), WRITE_TIME(
-            "Total Time (Write)"), //
+                "Total Time (Write)"), //
 
         BSD_UNIT("BSD Unit"), LEAF("Leaf"), WHOLE("Whole"), //
 
         DA_MEDIA_NAME("DAMediaName"), DA_VOLUME_NAME("DAVolumeName"), DA_MEDIA_SIZE(
-            "DAMediaSize"), //
+                "DAMediaSize"), //
         DA_DEVICE_MODEL("DADeviceModel"), MODEL("Model");
 
         private final String key;

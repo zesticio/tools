@@ -30,7 +30,6 @@ import com.sun.jna.platform.win32.PdhUtil;
 import com.sun.jna.platform.win32.PdhUtil.PdhException;
 import com.sun.jna.platform.win32.VersionHelpers;
 import com.sun.jna.platform.win32.Win32Exception;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.util.platform.windows.PerfDataUtil.PerfCounter;
 
@@ -43,7 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /*
  * Enables queries of Performance Counters using wild cards to filter instances
  */
-@ThreadSafe public final class PerfCounterQuery {
+@ThreadSafe
+public final class PerfCounterQuery {
 
     /*
      * Multiple classes use these constants
@@ -52,13 +52,13 @@ import java.util.concurrent.ConcurrentHashMap;
     public static final String TOTAL_INSTANCES = "*_Total";
     public static final String NOT_TOTAL_INSTANCE = "^" + TOTAL_INSTANCE;
     public static final String NOT_TOTAL_INSTANCES = "^" + TOTAL_INSTANCES;
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
     private static final boolean IS_VISTA_OR_GREATER = VersionHelpers.IsWindowsVistaOrGreater();
     // Use a thread safe set to cache failed pdh queries
     private static final Set<String> failedQueryCache = ConcurrentHashMap.newKeySet();
     // For XP, use a map to cache localization strings
     private static final ConcurrentHashMap<String, String> localizeCache =
-        IS_VISTA_OR_GREATER ? null : new ConcurrentHashMap<>();
+            IS_VISTA_OR_GREATER ? null : new ConcurrentHashMap<>();
 
     private PerfCounterQuery() {
     }
@@ -79,14 +79,14 @@ import java.util.concurrent.ConcurrentHashMap;
      * success, or an empty map if both PDH and WMI queries failed.
      */
     public static <T extends Enum<T>> Map<T, Long> queryValues(Class<T> propertyEnum,
-        String perfObject, String perfWmiClass) {
+                                                               String perfObject, String perfWmiClass) {
         if (!failedQueryCache.contains(perfObject)) {
             Map<T, Long> valueMap = queryValuesFromPDH(propertyEnum, perfObject);
             if (!valueMap.isEmpty()) {
                 return valueMap;
             }
             // If we are here, query failed
-            LOG.warn("Disabling further attempts to query {}.", perfObject);
+            logger.warn("Disabling further attempts to query {}." + perfObject);
             failedQueryCache.add(perfObject);
         }
         return queryValuesFromWMI(propertyEnum, perfWmiClass);
@@ -107,7 +107,7 @@ import java.util.concurrent.ConcurrentHashMap;
      * success, or an empty map if the PDH query failed.
      */
     public static <T extends Enum<T>> Map<T, Long> queryValuesFromPDH(Class<T> propertyEnum,
-        String perfObject) {
+                                                                      String perfObject) {
         T[] props = propertyEnum.getEnumConstants();
         // If pre-Vista, localize the perfObject
         String perfObjectLocalized = PerfCounterQuery.localizeIfNeeded(perfObject);
@@ -117,8 +117,8 @@ import java.util.concurrent.ConcurrentHashMap;
             // Set up the query and counter handles
             for (T prop : props) {
                 PerfCounter counter = PerfDataUtil.createCounter(perfObjectLocalized,
-                    ((PdhCounterProperty) prop).getInstance(),
-                    ((PdhCounterProperty) prop).getCounter());
+                        ((PdhCounterProperty) prop).getInstance(),
+                        ((PdhCounterProperty) prop).getCounter());
                 counterMap.put(prop, counter);
                 if (!pdhQueryHandler.addCounterToQuery(counter)) {
                     return valueMap;
@@ -148,10 +148,10 @@ import java.util.concurrent.ConcurrentHashMap;
      * successful, an empty map if the WMI query failed.
      */
     public static <T extends Enum<T>> Map<T, Long> queryValuesFromWMI(Class<T> propertyEnum,
-        String wmiClass) {
+                                                                      String wmiClass) {
         WmiQuery<T> query = new WmiQuery<>(wmiClass, propertyEnum);
         WmiResult<T> result =
-            Objects.requireNonNull(WmiQueryHandler.createInstance()).queryWMI(query);
+                Objects.requireNonNull(WmiQueryHandler.createInstance()).queryWMI(query);
         EnumMap<T, Long> valueMap = new EnumMap<>(propertyEnum);
         if (result.getResultCount() > 0) {
             for (T prop : propertyEnum.getEnumConstants()) {
@@ -167,7 +167,7 @@ import java.util.concurrent.ConcurrentHashMap;
                         break;
                     case Wbemcli.CIM_DATETIME:
                         valueMap.put(prop,
-                            WmiUtil.getDateTime(result, prop, 0).toInstant().toEpochMilli());
+                                WmiUtil.getDateTime(result, prop, 0).toInstant().toEpochMilli());
                         break;
                     default:
                         throw new ClassCastException("Unimplemented CIM Type Mapping.");
@@ -191,28 +191,28 @@ import java.util.concurrent.ConcurrentHashMap;
      */
     public static String localizeIfNeeded(String perfObject) {
         return IS_VISTA_OR_GREATER ?
-            perfObject :
-            localizeCache.computeIfAbsent(perfObject, PerfCounterQuery::localizeUsingPerfIndex);
+                perfObject :
+                localizeCache.computeIfAbsent(perfObject, PerfCounterQuery::localizeUsingPerfIndex);
     }
 
     private static String localizeUsingPerfIndex(String perfObject) {
         String localized = perfObject;
         try {
             localized = PdhUtil.PdhLookupPerfNameByIndex(null,
-                PdhUtil.PdhLookupPerfIndexByEnglishName(perfObject));
+                    PdhUtil.PdhLookupPerfIndexByEnglishName(perfObject));
         } catch (Win32Exception e) {
-            LOG.warn(
-                "Unable to locate English counter names in registry Perflib 009. Assuming English counters. Error {}. {}",
-                String.format("0x%x", e.getHR().intValue()),
-                "See https://support.microsoft.com/en-us/help/300956/how-to-manually-rebuild-performance-counter-library-values");
+            logger.warn(
+                    "Unable to locate English counter names in registry Perflib 009. Assuming English counters. Error {}. {}" +
+                            String.format("0x%x", e.getHR().intValue()) +
+                            "See https://support.microsoft.com/en-us/help/300956/how-to-manually-rebuild-performance-counter-library-values");
         } catch (PdhException e) {
-            LOG.warn("Unable to localize {} performance counter.  Error {}.", perfObject,
-                String.format("0x%x", e.getErrorCode()));
+            logger.warn("Unable to localize {} performance counter.  Error {}." + " " + perfObject + " " +
+                    String.format("0x%x", e.getErrorCode()));
         }
         if (localized.isEmpty()) {
             return perfObject;
         }
-        LOG.debug("Localized {} to {}", perfObject, localized);
+        logger.debug("Localized {} to {}" + perfObject + " " + localized);
         return localized;
     }
 

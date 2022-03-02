@@ -28,10 +28,10 @@ import com.sun.jna.platform.win32.IPHlpAPI;
 import com.sun.jna.platform.win32.IPHlpAPI.MIB_IFROW;
 import com.sun.jna.platform.win32.IPHlpAPI.MIB_IF_ROW2;
 import com.sun.jna.platform.win32.VersionHelpers;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.NetworkIF;
 import com.zestic.system.hardware.common.AbstractNetworkIF;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.ParseUtil;
 
 import java.net.NetworkInterface;
@@ -43,7 +43,7 @@ import java.util.List;
  */
 @ThreadSafe public final class WindowsNetworkIF extends AbstractNetworkIF {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final boolean IS_VISTA_OR_GREATER = VersionHelpers.IsWindowsVistaOrGreater();
     private static final byte CONNECTOR_PRESENT_BIT = 0b00000100;
@@ -81,7 +81,7 @@ import java.util.List;
             try {
                 ifList.add(new WindowsNetworkIF(ni));
             } catch (InstantiationException e) {
-                LOG.debug("Network Interface Instantiation failed: {}", e.getMessage());
+                LOG.debug("Network Interface Instantiation failed: {}" + e.getMessage());
             }
         }
         return ifList;
@@ -155,8 +155,8 @@ import java.util.List;
             ifRow.InterfaceIndex = queryNetworkInterface().getIndex();
             if (0 != IPHlpAPI.INSTANCE.GetIfEntry2(ifRow)) {
                 // Error, abort
-                LOG.error("Failed to retrieve data for interface {}, {}",
-                    queryNetworkInterface().getIndex(), getName());
+//                LOG.error("Failed to retrieve data for interface {}, {}",
+//                    queryNetworkInterface().getIndex(), getName());
                 return false;
             }
             this.ifType = ifRow.Type;
@@ -179,8 +179,8 @@ import java.util.List;
             ifRow.dwIndex = queryNetworkInterface().getIndex();
             if (0 != IPHlpAPI.INSTANCE.GetIfEntry(ifRow)) {
                 // Error, abort
-                LOG.error("Failed to retrieve data for interface {}, {}",
-                    queryNetworkInterface().getIndex(), getName());
+//                LOG.error("Failed to retrieve data for interface {}, {}",
+//                    queryNetworkInterface().getIndex(), getName());
                 return false;
             }
             this.ifType = ifRow.dwType;

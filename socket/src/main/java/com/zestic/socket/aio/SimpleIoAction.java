@@ -2,8 +2,6 @@ package com.zestic.socket.aio;
 
 import java.nio.ByteBuffer;
 
-import com.zestic.log.StaticLog;
-
 /*
  * 简易IO信息处理类<br>
  * 简单实现了accept和failed事件
@@ -12,13 +10,15 @@ import com.zestic.log.StaticLog;
  *
  */
 public abstract class SimpleIoAction implements IoAction<ByteBuffer> {
-	
+
+	private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AcceptHandler.class);
+
 	@Override
 	public void accept(AioSession session) {
 	}
 
 	@Override
 	public void failed(Throwable exc, AioSession session) {
-		StaticLog.error(exc);
+		logger.error(exc);
 	}
 }

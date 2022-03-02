@@ -26,12 +26,12 @@ package com.zestic.system.hardware.platform.mac;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.mac.CoreFoundation.CFArrayRef;
 import com.sun.jna.platform.mac.CoreFoundation.CFStringRef;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.mac.net.NetStat;
 import com.zestic.system.driver.mac.net.NetStat.IFdata;
 import com.zestic.system.hardware.NetworkIF;
 import com.zestic.system.hardware.common.AbstractNetworkIF;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.mac.SystemConfiguration;
 
 import java.net.NetworkInterface;
@@ -42,9 +42,10 @@ import java.util.Map;
 /*
  * MacNetworks class.
  */
-@ThreadSafe public final class MacNetworkIF extends AbstractNetworkIF {
+@ThreadSafe
+public final class MacNetworkIF extends AbstractNetworkIF {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private int ifType;
     private long bytesRecv;
@@ -59,7 +60,7 @@ import java.util.Map;
     private long timeStamp;
 
     public MacNetworkIF(NetworkInterface netint, Map<Integer, IFdata> data)
-        throws InstantiationException {
+            throws InstantiationException {
         super(netint, queryIfDisplayName(netint));
         updateNetworkStats(data);
     }
@@ -73,13 +74,13 @@ import java.util.Map;
                 for (int i = 0; i < count; i++) {
                     Pointer pNetIf = ifArray.getValueAtIndex(i);
                     SystemConfiguration.SCNetworkInterfaceRef scNetIf =
-                        new SystemConfiguration.SCNetworkInterfaceRef(pNetIf);
+                            new SystemConfiguration.SCNetworkInterfaceRef(pNetIf);
                     CFStringRef cfName =
-                        SystemConfiguration.INSTANCE.SCNetworkInterfaceGetBSDName(scNetIf);
+                            SystemConfiguration.INSTANCE.SCNetworkInterfaceGetBSDName(scNetIf);
                     if (cfName != null && name.equals(cfName.stringValue())) {
                         CFStringRef cfDisplayName =
-                            SystemConfiguration.INSTANCE.SCNetworkInterfaceGetLocalizedDisplayName(
-                                scNetIf);
+                                SystemConfiguration.INSTANCE.SCNetworkInterfaceGetLocalizedDisplayName(
+                                        scNetIf);
                         return cfDisplayName.stringValue();
                     }
                 }
@@ -104,57 +105,69 @@ import java.util.Map;
             try {
                 ifList.add(new MacNetworkIF(ni, data));
             } catch (InstantiationException e) {
-                LOG.debug("Network Interface Instantiation failed: {}", e.getMessage());
+                LOG.debug("Network Interface Instantiation failed: {" + e.getMessage() + "}");
             }
         }
         return ifList;
     }
 
-    @Override public int getIfType() {
+    @Override
+    public int getIfType() {
         return this.ifType;
     }
 
-    @Override public long getBytesRecv() {
+    @Override
+    public long getBytesRecv() {
         return this.bytesRecv;
     }
 
-    @Override public long getBytesSent() {
+    @Override
+    public long getBytesSent() {
         return this.bytesSent;
     }
 
-    @Override public long getPacketsRecv() {
+    @Override
+    public long getPacketsRecv() {
         return this.packetsRecv;
     }
 
-    @Override public long getPacketsSent() {
+    @Override
+    public long getPacketsSent() {
         return this.packetsSent;
     }
 
-    @Override public long getInErrors() {
+    @Override
+    public long getInErrors() {
         return this.inErrors;
     }
 
-    @Override public long getOutErrors() {
+    @Override
+    public long getOutErrors() {
         return this.outErrors;
     }
 
-    @Override public long getInDrops() {
+    @Override
+    public long getInDrops() {
         return this.inDrops;
     }
 
-    @Override public long getCollisions() {
+    @Override
+    public long getCollisions() {
         return this.collisions;
     }
 
-    @Override public long getSpeed() {
+    @Override
+    public long getSpeed() {
         return this.speed;
     }
 
-    @Override public long getTimeStamp() {
+    @Override
+    public long getTimeStamp() {
         return this.timeStamp;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         int index = queryNetworkInterface().getIndex();
         return updateNetworkStats(NetStat.queryIFdata(index));
     }

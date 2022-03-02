@@ -28,10 +28,10 @@ import com.sun.jna.platform.win32.SetupApi.SP_DEVICE_INTERFACE_DATA;
 import com.sun.jna.platform.win32.SetupApi.SP_DEVINFO_DATA;
 import com.sun.jna.platform.win32.WinReg.HKEY;
 import com.sun.jna.ptr.IntByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.Immutable;
 import com.zestic.system.hardware.Display;
 import com.zestic.system.hardware.common.AbstractDisplay;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 @Immutable final class WindowsDisplay extends AbstractDisplay {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final SetupApi SU = SetupApi.INSTANCE;
     private static final Advapi32 ADV = Advapi32.INSTANCE;

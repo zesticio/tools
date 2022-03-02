@@ -14,25 +14,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>com.zestic</groupId>
             <artifactId>core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zestic</groupId>
-            <artifactId>log</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

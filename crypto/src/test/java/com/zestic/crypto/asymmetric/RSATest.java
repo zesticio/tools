@@ -4,8 +4,8 @@ import com.zestic.core.codec.Base64;
 import com.zestic.core.util.*;
 import com.zestic.crypto.KeyUtil;
 import com.zestic.crypto.SecureUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.crypto.Cipher;
 import java.math.BigInteger;
@@ -20,8 +20,8 @@ public class RSATest {
     @Test
     public void generateKeyPairTest() {
         KeyPair pair = KeyUtil.generateKeyPair("RSA");
-        Assert.assertNotNull(pair.getPrivate());
-        Assert.assertNotNull(pair.getPublic());
+        Assertions.assertNotNull(pair.getPrivate());
+        Assertions.assertNotNull(pair.getPublic());
     }
 
     @Test
@@ -35,12 +35,12 @@ public class RSATest {
         // Public-key encryption private key to decrypt
         byte[] encrypt = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
         byte[] decrypt = rsa.decrypt(encrypt, KeyType.PrivateKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
 
         // The private key encryption, public key to decrypt
         byte[] encrypt2 = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PrivateKey);
         byte[] decrypt2 = rsa.decrypt(encrypt2, KeyType.PublicKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
     }
 
     @Test
@@ -48,21 +48,21 @@ public class RSATest {
         final RSA rsa = new RSA();
 
         // Access to private and public keys
-        Assert.assertNotNull(rsa.getPrivateKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
-        Assert.assertNotNull(rsa.getPublicKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPrivateKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPublicKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
 
         // Public-key encryption private key to decrypt
         byte[] encrypt = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
 
         byte[] decrypt = rsa.decrypt(encrypt, KeyType.PrivateKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
 
         // The private key encryption, public key to decrypt
         byte[] encrypt2 = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PrivateKey);
         byte[] decrypt2 = rsa.decrypt(encrypt2, KeyType.PublicKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
     }
 
     @Test
@@ -70,21 +70,21 @@ public class RSATest {
         final RSA rsa = new RSA(AsymmetricAlgorithm.RSA_ECB.getValue());
 
         // Access to private and public keys
-        Assert.assertNotNull(rsa.getPrivateKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
-        Assert.assertNotNull(rsa.getPublicKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPrivateKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPublicKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
 
         // Public-key encryption private key to decrypt
         byte[] encrypt = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
 
         byte[] decrypt = rsa.decrypt(encrypt, KeyType.PrivateKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
 
         // The private key encryption, public key to decrypt
         byte[] encrypt2 = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PrivateKey);
         byte[] decrypt2 = rsa.decrypt(encrypt2, KeyType.PublicKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
     }
 
     @Test
@@ -92,21 +92,21 @@ public class RSATest {
         final RSA rsa = new RSA(AsymmetricAlgorithm.RSA_None.getValue());
 
         // Access to private and public keys
-        Assert.assertNotNull(rsa.getPrivateKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
-        Assert.assertNotNull(rsa.getPublicKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPrivateKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPublicKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
 
         // Public-key encryption private key to decrypt
         byte[] encrypt = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
 
         byte[] decrypt = rsa.decrypt(encrypt, KeyType.PrivateKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
 
         // The private key encryption, public key to decrypt
         byte[] encrypt2 = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PrivateKey);
         byte[] decrypt2 = rsa.decrypt(encrypt2, KeyType.PublicKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
     }
 
     @Test
@@ -115,20 +115,20 @@ public class RSATest {
         rsa.setEncryptBlockSize(3);
 
         // Access to private and public keys
-        Assert.assertNotNull(rsa.getPrivateKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
-        Assert.assertNotNull(rsa.getPublicKey());
-        Assert.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPrivateKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
+        Assertions.assertNotNull(rsa.getPublicKey());
+        Assertions.assertNotNull(rsa.getPrivateKeyBase64());
 
         // Public-key encryption private key to decrypt
         byte[] encrypt = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PublicKey);
         byte[] decrypt = rsa.decrypt(encrypt, KeyType.PrivateKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt, CharsetUtil.CHARSET_UTF_8));
 
         // The private key encryption, public key to decrypt
         byte[] encrypt2 = rsa.encrypt(StrUtil.bytes("I am a test aaaa", CharsetUtil.CHARSET_UTF_8), KeyType.PrivateKey);
         byte[] decrypt2 = rsa.decrypt(encrypt2, KeyType.PublicKey);
-        Assert.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
+        Assertions.assertEquals("I am a test aaaa", StrUtil.str(decrypt2, CharsetUtil.CHARSET_UTF_8));
     }
 
     @Test
@@ -140,12 +140,12 @@ public class RSATest {
         // Public-key encryption private key to decrypt
         String encryptStr = rsa.encryptBcd(text, KeyType.PublicKey);
         String decryptStr = StrUtil.utf8Str(rsa.decryptFromBcd(encryptStr, KeyType.PrivateKey));
-        Assert.assertEquals(text, decryptStr);
+        Assertions.assertEquals(text, decryptStr);
 
         // The private key encryption, public key to decrypt
         String encrypt2 = rsa.encryptBcd(text, KeyType.PrivateKey);
         String decrypt2 = StrUtil.utf8Str(rsa.decryptFromBcd(encrypt2, KeyType.PublicKey));
-        Assert.assertEquals(text, decrypt2);
+        Assertions.assertEquals(text, decrypt2);
     }
 
     @Test
@@ -160,12 +160,12 @@ public class RSATest {
         // Public-key encryption private key to decrypt
         String encryptStr = rsa.encryptBase64(text.toString(), KeyType.PublicKey);
         String decryptStr = StrUtil.utf8Str(rsa.decrypt(encryptStr, KeyType.PrivateKey));
-        Assert.assertEquals(text.toString(), decryptStr);
+        Assertions.assertEquals(text.toString(), decryptStr);
 
         // The private key encryption, public key to decrypt
         String encrypt2 = rsa.encryptBase64(text.toString(), KeyType.PrivateKey);
         String decrypt2 = StrUtil.utf8Str(rsa.decrypt(encrypt2, KeyType.PublicKey));
-        Assert.assertEquals(text.toString(), decrypt2);
+        Assertions.assertEquals(text.toString(), decrypt2);
     }
 
     @Test
@@ -216,7 +216,7 @@ public class RSATest {
         rsa.setEncryptBlockSize(128);
         String result2 = rsa.encryptHex(finalData, KeyType.PublicKey);
 
-        Assert.assertEquals(result1, result2);
+        Assertions.assertEquals(result1, result2);
     }
 
     @Test
@@ -229,6 +229,6 @@ public class RSATest {
         RSA rsa = new RSA(new BigInteger(modulus, 16), null, new BigInteger(publicExponent));
 
         final String encryptBase64 = rsa.encryptBase64("The test content", KeyType.PublicKey);
-        Assert.assertNotNull(encryptBase64);
+        Assertions.assertNotNull(encryptBase64);
     }
 }

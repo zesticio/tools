@@ -27,8 +27,8 @@ import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.unix.openbsd.OpenBsdLibc;
 import com.zestic.system.software.common.AbstractOSProcess;
 import com.zestic.system.software.os.OSProcess;
@@ -46,12 +46,13 @@ import static com.zestic.system.util.Memoizer.memoize;
 /*
  * OSProcess implementation
  */
-@ThreadSafe public class OpenBsdOSProcess extends AbstractOSProcess {
+@ThreadSafe
+public class OpenBsdOSProcess extends AbstractOSProcess {
 
     static final String PS_THREAD_COLUMNS =
-        Arrays.stream(PsThreadColumns.values()).map(Enum::name).map(String::toLowerCase)
-            .collect(Collectors.joining(","));
-    private static final Log LOG = Log.get();
+            Arrays.stream(PsThreadColumns.values()).map(Enum::name).map(String::toLowerCase)
+                    .collect(Collectors.joining(","));
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final int ARGMAX;
 
     static {
@@ -64,15 +65,15 @@ import static com.zestic.system.util.Memoizer.memoize;
             ARGMAX = m.getInt(0);
         } else {
             LOG.warn(
-                "Failed sysctl call for process arguments max size (kern.argmax). Error code: {}",
-                Native.getLastError());
+                    "Failed sysctl call for process arguments max size (kern.argmax). Error code: {}" +
+                            Native.getLastError());
             ARGMAX = 0;
         }
     }
 
     private Supplier<List<String>> arguments = memoize(this::queryArguments);
     private Supplier<Map<String, String>> environmentVariables =
-        memoize(this::queryEnvironmentVariables);
+            memoize(this::queryEnvironmentVariables);
     private String name;
     private String path = "";
     private String user;
@@ -97,6 +98,7 @@ import static com.zestic.system.util.Memoizer.memoize;
     private int bitness;
     private String commandLineBackup;
     private Supplier<String> commandLine = memoize(this::queryCommandLine);
+
     public OpenBsdOSProcess(int pid, Map<OpenBsdOperatingSystem.PsKeywords, String> psMap) {
         super(pid);
         // OpenBSD does not maintain a compatibility layer.
@@ -106,15 +108,18 @@ import static com.zestic.system.util.Memoizer.memoize;
         updateAttributes(psMap);
     }
 
-    @Override public String getName() {
+    @Override
+    public String getName() {
         return this.name;
     }
 
-    @Override public String getPath() {
+    @Override
+    public String getPath() {
         return this.path;
     }
 
-    @Override public String getCommandLine() {
+    @Override
+    public String getCommandLine() {
         return this.commandLine.get();
     }
 
@@ -123,7 +128,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         return cl.isEmpty() ? this.commandLineBackup : cl;
     }
 
-    @Override public List<String> getArguments() {
+    @Override
+    public List<String> getArguments() {
         return arguments.get();
     }
 
@@ -160,7 +166,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         return Collections.emptyList();
     }
 
-    @Override public Map<String, String> getEnvironmentVariables() {
+    @Override
+    public Map<String, String> getEnvironmentVariables() {
         return environmentVariables.get();
     }
 
@@ -199,83 +206,103 @@ import static com.zestic.system.util.Memoizer.memoize;
         return Collections.emptyMap();
     }
 
-    @Override public String getCurrentWorkingDirectory() {
+    @Override
+    public String getCurrentWorkingDirectory() {
         return FstatUtil.getCwd(getProcessID());
     }
 
-    @Override public String getUser() {
+    @Override
+    public String getUser() {
         return this.user;
     }
 
-    @Override public String getUserID() {
+    @Override
+    public String getUserID() {
         return this.userID;
     }
 
-    @Override public String getGroup() {
+    @Override
+    public String getGroup() {
         return this.group;
     }
 
-    @Override public String getGroupID() {
+    @Override
+    public String getGroupID() {
         return this.groupID;
     }
 
-    @Override public OSProcess.State getState() {
+    @Override
+    public OSProcess.State getState() {
         return this.state;
     }
 
-    @Override public int getParentProcessID() {
+    @Override
+    public int getParentProcessID() {
         return this.parentProcessID;
     }
 
-    @Override public int getThreadCount() {
+    @Override
+    public int getThreadCount() {
         return this.threadCount;
     }
 
-    @Override public int getPriority() {
+    @Override
+    public int getPriority() {
         return this.priority;
     }
 
-    @Override public long getVirtualSize() {
+    @Override
+    public long getVirtualSize() {
         return this.virtualSize;
     }
 
-    @Override public long getResidentSetSize() {
+    @Override
+    public long getResidentSetSize() {
         return this.residentSetSize;
     }
 
-    @Override public long getKernelTime() {
+    @Override
+    public long getKernelTime() {
         return this.kernelTime;
     }
 
-    @Override public long getUserTime() {
+    @Override
+    public long getUserTime() {
         return this.userTime;
     }
 
-    @Override public long getUpTime() {
+    @Override
+    public long getUpTime() {
         return this.upTime;
     }
 
-    @Override public long getStartTime() {
+    @Override
+    public long getStartTime() {
         return this.startTime;
     }
 
-    @Override public long getBytesRead() {
+    @Override
+    public long getBytesRead() {
         return this.bytesRead;
     }
 
-    @Override public long getBytesWritten() {
+    @Override
+    public long getBytesWritten() {
         return this.bytesWritten;
     }
 
-    @Override public long getOpenFiles() {
+    @Override
+    public long getOpenFiles() {
         return FstatUtil.getOpenFiles(getProcessID());
     }
 
-    @Override public int getBitness() {
+    @Override
+    public int getBitness() {
         return this.bitness;
     }
 
-    @Override public long getAffinityMask() {
+    @Override
+    public long getAffinityMask() {
         long bitMask = 0L;
         // Would prefer to use native cpuset_getaffinity call but variable sizing is
         // kernel-dependent and requires C macros, so we use commandline instead.
@@ -296,7 +323,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         return bitMask;
     }
 
-    @Override public List<OSThread> getThreadDetails() {
+    @Override
+    public List<OSThread> getThreadDetails() {
         List<OSThread> threads = new ArrayList<>();
         String psCommand = "ps -aHwwxo " + PS_THREAD_COLUMNS;
         if (getProcessID() >= 0) {
@@ -311,7 +339,7 @@ import static com.zestic.system.util.Memoizer.memoize;
         // Fill list
         for (String thread : threadList) {
             Map<PsThreadColumns, String> threadMap =
-                ParseUtil.stringToEnumMap(PsThreadColumns.class, thread.trim(), ' ');
+                    ParseUtil.stringToEnumMap(PsThreadColumns.class, thread.trim(), ' ');
             if (threadMap.containsKey(PsThreadColumns.ARGS)) {
                 threads.add(new OpenBsdOSThread(getProcessID(), threadMap));
             }
@@ -319,28 +347,32 @@ import static com.zestic.system.util.Memoizer.memoize;
         return threads;
     }
 
-    @Override public long getMinorFaults() {
+    @Override
+    public long getMinorFaults() {
         return this.minorFaults;
     }
 
-    @Override public long getMajorFaults() {
+    @Override
+    public long getMajorFaults() {
         return this.majorFaults;
     }
 
-    @Override public long getContextSwitches() {
+    @Override
+    public long getContextSwitches() {
         return this.contextSwitches;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         // 'ps' does not provide threadCount or kernelTime on OpenBSD
         String psCommand =
-            "ps -awwxo " + OpenBsdOperatingSystem.PS_COMMAND_ARGS + " -p " + getProcessID();
+                "ps -awwxo " + OpenBsdOperatingSystem.PS_COMMAND_ARGS + " -p " + getProcessID();
         List<String> procList = ExecutingCommand.runNative(psCommand);
         if (procList.size() > 1) {
             // skip header row
             Map<OpenBsdOperatingSystem.PsKeywords, String> psMap =
-                ParseUtil.stringToEnumMap(OpenBsdOperatingSystem.PsKeywords.class,
-                    procList.get(1).trim(), ' ');
+                    ParseUtil.stringToEnumMap(OpenBsdOperatingSystem.PsKeywords.class,
+                            procList.get(1).trim(), ' ');
             // Check if last (thus all) value populated
             if (psMap.containsKey(OpenBsdOperatingSystem.PsKeywords.ARGS)) {
                 updateThreadCount();
@@ -377,39 +409,39 @@ import static com.zestic.system.util.Memoizer.memoize;
                 break;
         }
         this.parentProcessID =
-            ParseUtil.parseIntOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.PPID), 0);
+                ParseUtil.parseIntOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.PPID), 0);
         this.user = psMap.get(OpenBsdOperatingSystem.PsKeywords.USER);
         this.userID = psMap.get(OpenBsdOperatingSystem.PsKeywords.UID);
         this.group = psMap.get(OpenBsdOperatingSystem.PsKeywords.GROUP);
         this.groupID = psMap.get(OpenBsdOperatingSystem.PsKeywords.GID);
         this.priority =
-            ParseUtil.parseIntOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.PRI), 0);
+                ParseUtil.parseIntOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.PRI), 0);
         // These are in KB, multiply
         this.virtualSize =
-            ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.VSZ), 0)
-                * 1024;
+                ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.VSZ), 0)
+                        * 1024;
         this.residentSetSize =
-            ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.RSS), 0)
-                * 1024;
+                ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.RSS), 0)
+                        * 1024;
         // Avoid divide by zero for processes up less than a second
         long elapsedTime =
-            ParseUtil.parseDHMSOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.ETIME), 0L);
+                ParseUtil.parseDHMSOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.ETIME), 0L);
         this.upTime = elapsedTime < 1L ? 1L : elapsedTime;
         this.startTime = now - this.upTime;
         this.userTime =
-            ParseUtil.parseDHMSOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.CPUTIME), 0L);
+                ParseUtil.parseDHMSOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.CPUTIME), 0L);
         // kernel time is included in user time
         this.kernelTime = 0L;
         this.path = psMap.get(OpenBsdOperatingSystem.PsKeywords.COMM);
         this.name = this.path.substring(this.path.lastIndexOf('/') + 1);
         this.minorFaults =
-            ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.MINFLT), 0L);
+                ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.MINFLT), 0L);
         this.majorFaults =
-            ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.MAJFLT), 0L);
+                ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.MAJFLT), 0L);
         long nonVoluntaryContextSwitches =
-            ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.NIVCSW), 0L);
+                ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.NIVCSW), 0L);
         long voluntaryContextSwitches =
-            ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.NVCSW), 0L);
+                ParseUtil.parseLongOrDefault(psMap.get(OpenBsdOperatingSystem.PsKeywords.NVCSW), 0L);
         this.contextSwitches = voluntaryContextSwitches + nonVoluntaryContextSwitches;
         this.commandLineBackup = psMap.get(OpenBsdOperatingSystem.PsKeywords.ARGS);
         return true;

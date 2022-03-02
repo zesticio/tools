@@ -29,7 +29,6 @@ import com.sun.jna.platform.win32.COM.WbemcliUtil.WmiResult;
 import com.sun.jna.platform.win32.PdhUtil;
 import com.sun.jna.platform.win32.PdhUtil.PdhEnumObjectItems;
 import com.sun.jna.platform.win32.PdhUtil.PdhException;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.util.Util;
 import com.zestic.system.util.tuples.Pair;
@@ -40,9 +39,10 @@ import java.util.concurrent.ConcurrentHashMap;
 /*
  * Enables queries of Performance Counters using wild cards to filter instances
  */
-@ThreadSafe public final class PerfCounterWildcardQuery {
+@ThreadSafe
+public final class PerfCounterWildcardQuery {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterWildcardQuery.class);
 
     // Use a thread safe set to cache failed pdh queries
     private static final Set<String> failedQueryCache = ConcurrentHashMap.newKeySet();
@@ -67,15 +67,15 @@ import java.util.concurrent.ConcurrentHashMap;
      * an empty list and empty map if both PDH and WMI queries failed.
      */
     public static <T extends Enum<T>> Pair<List<String>, Map<T, List<Long>>> queryInstancesAndValues(
-        Class<T> propertyEnum, String perfObject, String perfWmiClass) {
+            Class<T> propertyEnum, String perfObject, String perfWmiClass) {
         if (!failedQueryCache.contains(perfObject)) {
             Pair<List<String>, Map<T, List<Long>>> instancesAndValuesMap =
-                queryInstancesAndValuesFromPDH(propertyEnum, perfObject);
+                    queryInstancesAndValuesFromPDH(propertyEnum, perfObject);
             if (!instancesAndValuesMap.getA().isEmpty()) {
                 return instancesAndValuesMap;
             }
             // If we are here, query failed
-            LOG.warn("Disabling further attempts to query {}.", perfObject);
+            LOG.warn("Disabling further attempts to query {}." + perfObject);
             failedQueryCache.add(perfObject);
         }
         return queryInstancesAndValuesFromWMI(propertyEnum, perfWmiClass);
@@ -97,15 +97,15 @@ import java.util.concurrent.ConcurrentHashMap;
      * an empty list and empty map if the PDH query failed.
      */
     public static <T extends Enum<T>> Pair<List<String>, Map<T, List<Long>>> queryInstancesAndValuesFromPDH(
-        Class<T> propertyEnum, String perfObject) {
+            Class<T> propertyEnum, String perfObject) {
         T[] props = propertyEnum.getEnumConstants();
         if (props.length < 2) {
             throw new IllegalArgumentException("Enum " + propertyEnum.getName()
-                + " must have at least two elements, an instance filter and a counter.");
+                    + " must have at least two elements, an instance filter and a counter.");
         }
         String instanceFilter =
-            ((PdhCounterWildcardProperty) propertyEnum.getEnumConstants()[0]).getCounter()
-                .toLowerCase();
+                ((PdhCounterWildcardProperty) propertyEnum.getEnumConstants()[0]).getCounter()
+                        .toLowerCase();
         // If pre-Vista, localize the perfObject
         String perfObjectLocalized = PerfCounterQuery.localizeIfNeeded(perfObject);
 
@@ -129,8 +129,8 @@ import java.util.concurrent.ConcurrentHashMap;
                 List<PerfDataUtil.PerfCounter> counterList = new ArrayList<>(instances.size());
                 for (String instance : instances) {
                     PerfDataUtil.PerfCounter counter =
-                        PerfDataUtil.createCounter(perfObject, instance,
-                            ((PdhCounterWildcardProperty) prop).getCounter());
+                            PerfDataUtil.createCounter(perfObject, instance,
+                                    ((PdhCounterWildcardProperty) prop).getCounter());
                     if (!pdhQueryHandler.addCounterToQuery(counter)) {
                         return new Pair<>(Collections.emptyList(), Collections.emptyMap());
                     }
@@ -169,12 +169,12 @@ import java.util.concurrent.ConcurrentHashMap;
      * an empty list and empty map if the WMI query failed.
      */
     public static <T extends Enum<T>> Pair<List<String>, Map<T, List<Long>>> queryInstancesAndValuesFromWMI(
-        Class<T> propertyEnum, String wmiClass) {
+            Class<T> propertyEnum, String wmiClass) {
         List<String> instances = new ArrayList<>();
         EnumMap<T, List<Long>> valuesMap = new EnumMap<>(propertyEnum);
         WmiQuery<T> query = new WmiQuery<>(wmiClass, propertyEnum);
         WmiResult<T> result =
-            Objects.requireNonNull(WmiQueryHandler.createInstance()).queryWMI(query);
+                Objects.requireNonNull(WmiQueryHandler.createInstance()).queryWMI(query);
         if (result.getResultCount() > 0) {
             for (T prop : propertyEnum.getEnumConstants()) {
                 // First element is instance name
@@ -197,7 +197,7 @@ import java.util.concurrent.ConcurrentHashMap;
                                 break;
                             case Wbemcli.CIM_DATETIME:
                                 values.add(WmiUtil.getDateTime(result, prop, i).toInstant()
-                                    .toEpochMilli());
+                                        .toEpochMilli());
                                 break;
                             default:
                                 throw new ClassCastException("Unimplemented CIM Type Mapping.");

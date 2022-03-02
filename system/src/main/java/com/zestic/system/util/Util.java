@@ -23,15 +23,15 @@
  */
 package com.zestic.system.util;
 
-
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 
 /*
  * General utility methods
  */
-@ThreadSafe public final class Util {
-    private static final Log LOG = Log.get();
+@ThreadSafe
+public final class Util {
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private Util() {
     }
@@ -43,10 +43,10 @@ import com.zestic.system.annotation.concurrent.ThreadSafe;
      */
     public static void sleep(long ms) {
         try {
-            LOG.trace("Sleeping for {} ms", ms);
+            LOG.trace("Sleeping for {" + ms + "} ms");
             Thread.sleep(ms);
         } catch (InterruptedException e) { // NOSONAR squid:S2142
-            LOG.warn("Interrupted while sleeping for {} ms: {}", ms, e.getMessage());
+            LOG.warn("Interrupted while sleeping for {" + ms + "} ms: {" + e.getMessage() + "}");
             Thread.currentThread().interrupt();
         }
     }

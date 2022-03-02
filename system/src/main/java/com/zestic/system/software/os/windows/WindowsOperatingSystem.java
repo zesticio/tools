@@ -34,13 +34,13 @@ import com.sun.jna.platform.win32.WinDef.DWORD;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinNT.HANDLEByReference;
 import com.sun.jna.ptr.IntByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.windows.EnumWindows;
 import com.zestic.system.driver.windows.registry.*;
 import com.zestic.system.driver.windows.registry.ProcessWtsData.WtsInfo;
 import com.zestic.system.driver.windows.wmi.Win32OperatingSystem;
 import com.zestic.system.driver.windows.wmi.Win32Processor;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.windows.WinNT;
 import com.zestic.system.software.common.AbstractOperatingSystem;
 import com.zestic.system.software.os.*;
@@ -61,13 +61,14 @@ import static com.zestic.system.util.Memoizer.memoize;
  * proprietary graphical operating system families, all of which are developed
  * and marketed by Microsoft.
  */
-@ThreadSafe public class WindowsOperatingSystem extends AbstractOperatingSystem {
+@ThreadSafe
+public class WindowsOperatingSystem extends AbstractOperatingSystem {
 
     public static final String OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED =
-        "com.zestic.system.os.windows.procstate.suspended";
-    private static final Log LOG = Log.get();
+            "com.zestic.system.os.windows.procstate.suspended";
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final boolean USE_PROCSTATE_SUSPENDED =
-        GlobalConfig.get(OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED, false);
+            GlobalConfig.get(OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED, false);
 
     private static final boolean IS_VISTA_OR_GREATER = VersionHelpers.IsWindowsVistaOrGreater();
 
@@ -81,7 +82,7 @@ import static com.zestic.system.util.Memoizer.memoize;
      * Windows event log name
      */
     private static Supplier<String> systemLog =
-        memoize(WindowsOperatingSystem::querySystemLog, TimeUnit.HOURS.toNanos(1));
+            memoize(WindowsOperatingSystem::querySystemLog, TimeUnit.HOURS.toNanos(1));
     private static final long BOOTTIME = querySystemBootTime();
 
     static {
@@ -93,19 +94,19 @@ import static com.zestic.system.util.Memoizer.memoize;
      * one returns null.
      */
     private Supplier<Map<Integer, ProcessPerformanceData.PerfCounterBlock>> processMapFromRegistry =
-        memoize(WindowsOperatingSystem::queryProcessMapFromRegistry, defaultExpiration());
+            memoize(WindowsOperatingSystem::queryProcessMapFromRegistry, defaultExpiration());
     private Supplier<Map<Integer, ProcessPerformanceData.PerfCounterBlock>>
-        processMapFromPerfCounters =
-        memoize(WindowsOperatingSystem::queryProcessMapFromPerfCounters, defaultExpiration());
+            processMapFromPerfCounters =
+            memoize(WindowsOperatingSystem::queryProcessMapFromPerfCounters, defaultExpiration());
     /*
      * Cache full thread stats queries. Second query will only populate if first one
      * returns null. Only used if USE_PROCSTATE_SUSPENDED is set true.
      */
     private Supplier<Map<Integer, ThreadPerformanceData.PerfCounterBlock>> threadMapFromRegistry =
-        memoize(WindowsOperatingSystem::queryThreadMapFromRegistry, defaultExpiration());
+            memoize(WindowsOperatingSystem::queryThreadMapFromRegistry, defaultExpiration());
     private Supplier<Map<Integer, ThreadPerformanceData.PerfCounterBlock>>
-        threadMapFromPerfCounters =
-        memoize(WindowsOperatingSystem::queryThreadMapFromPerfCounters, defaultExpiration());
+            threadMapFromPerfCounters =
+            memoize(WindowsOperatingSystem::queryThreadMapFromPerfCounters, defaultExpiration());
 
     /*
      * Gets suites available on the system and return as a codename
@@ -149,13 +150,13 @@ import static com.zestic.system.util.Memoizer.memoize;
         Map<Integer, Integer> parentPidMap = new HashMap<>();
         // Get processes from ToolHelp API for parent PID
         Tlhelp32.PROCESSENTRY32.ByReference processEntry =
-            new Tlhelp32.PROCESSENTRY32.ByReference();
+                new Tlhelp32.PROCESSENTRY32.ByReference();
         WinNT.HANDLE snapshot =
-            Kernel32.INSTANCE.CreateToolhelp32Snapshot(Tlhelp32.TH32CS_SNAPPROCESS, new DWORD(0));
+                Kernel32.INSTANCE.CreateToolhelp32Snapshot(Tlhelp32.TH32CS_SNAPPROCESS, new DWORD(0));
         try {
             while (Kernel32.INSTANCE.Process32Next(snapshot, processEntry)) {
                 parentPidMap.put(processEntry.th32ProcessID.intValue(),
-                    processEntry.th32ParentProcessID.intValue());
+                        processEntry.th32ParentProcessID.intValue());
             }
         } finally {
             Kernel32.INSTANCE.CloseHandle(snapshot);
@@ -195,7 +196,7 @@ import static com.zestic.system.util.Memoizer.memoize;
         if (eventLog != null) {
             try {
                 EventLogIterator iter =
-                    new EventLogIterator(null, eventLog, WinNT.EVENTLOG_BACKWARDS_READ);
+                        new EventLogIterator(null, eventLog, WinNT.EVENTLOG_BACKWARDS_READ);
                 // Get the most recent boot event (ID 12) from the Event log. If Windows "Fast
                 // Startup" is enabled we may not see event 12, so also check for most recent ID
                 // 6005 (Event log startup) as a reasonably close backup.
@@ -221,7 +222,7 @@ import static com.zestic.system.util.Memoizer.memoize;
                     return event6005Time;
                 }
             } catch (Win32Exception e) {
-                LOG.warn("Can't open event log \"{}\".", eventLog);
+                LOG.warn("Can't open event log \"{}\"." + eventLog);
             }
         }
         // If we get this far, event log reading has failed, either from no log or no
@@ -239,27 +240,27 @@ import static com.zestic.system.util.Memoizer.memoize;
     private static boolean enableDebugPrivilege() {
         HANDLEByReference hToken = new HANDLEByReference();
         boolean success = Advapi32.INSTANCE.OpenProcessToken(Kernel32.INSTANCE.GetCurrentProcess(),
-            WinNT.TOKEN_QUERY | WinNT.TOKEN_ADJUST_PRIVILEGES, hToken);
+                WinNT.TOKEN_QUERY | WinNT.TOKEN_ADJUST_PRIVILEGES, hToken);
         if (!success) {
-            LOG.error("OpenProcessToken failed. Error: {}", Native.getLastError());
+            LOG.error("OpenProcessToken failed. Error: {}" + Native.getLastError());
             return false;
         }
         try {
             WinNT.LUID luid = new WinNT.LUID();
             success = Advapi32.INSTANCE.LookupPrivilegeValue(null, WinNT.SE_DEBUG_NAME, luid);
             if (!success) {
-                LOG.error("LookupPrivilegeValue failed. Error: {}", Native.getLastError());
+                LOG.error("LookupPrivilegeValue failed. Error: {}" + Native.getLastError());
                 return false;
             }
             WinNT.TOKEN_PRIVILEGES tkp = new WinNT.TOKEN_PRIVILEGES(1);
             tkp.Privileges[0] =
-                new WinNT.LUID_AND_ATTRIBUTES(luid, new DWORD(WinNT.SE_PRIVILEGE_ENABLED));
+                    new WinNT.LUID_AND_ATTRIBUTES(luid, new DWORD(WinNT.SE_PRIVILEGE_ENABLED));
             success =
-                Advapi32.INSTANCE.AdjustTokenPrivileges(hToken.getValue(), false, tkp, 0, null,
-                    null);
+                    Advapi32.INSTANCE.AdjustTokenPrivileges(hToken.getValue(), false, tkp, 0, null,
+                            null);
             int err = Native.getLastError();
             if (!success) {
-                LOG.error("AdjustTokenPrivileges failed. Error: {}", err);
+                LOG.error("AdjustTokenPrivileges failed. Error: {}" + err);
                 return false;
             } else if (err == WinError.ERROR_NOT_ALL_ASSIGNED) {
                 LOG.debug("Debug privileges not enabled.");
@@ -281,8 +282,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         HANDLE h = Advapi32.INSTANCE.OpenEventLog(null, systemLog);
         if (h == null) {
             LOG.warn(
-                "Unable to open configured system Event log \"{}\". Calculating boot time from uptime.",
-                systemLog);
+                    "Unable to open configured system Event log \"{}\". Calculating boot time from uptime." +
+                    systemLog);
             return null;
         }
         return systemLog;
@@ -342,11 +343,13 @@ import static com.zestic.system.util.Memoizer.memoize;
         return false;
     }
 
-    @Override public String queryManufacturer() {
+    @Override
+    public String queryManufacturer() {
         return "Microsoft";
     }
 
-    @Override public Pair<String, OSVersionInfo> queryFamilyVersionInfo() {
+    @Override
+    public Pair<String, OSVersionInfo> queryFamilyVersionInfo() {
         String version = System.getProperty("os.name");
         if (version.startsWith("Windows ")) {
             version = version.substring(8);
@@ -356,46 +359,48 @@ import static com.zestic.system.util.Memoizer.memoize;
         int suiteMask = 0;
         String buildNumber = null;
         WmiResult<Win32OperatingSystem.OSVersionProperty> versionInfo =
-            Win32OperatingSystem.queryOsVersion();
+                Win32OperatingSystem.queryOsVersion();
         if (versionInfo.getResultCount() > 0) {
             sp = WmiUtil.getString(versionInfo, Win32OperatingSystem.OSVersionProperty.CSDVERSION,
-                0);
+                    0);
             if (!sp.isEmpty() && !Constants.UNKNOWN.equals(sp)) {
                 version = version + " " + sp.replace("Service Pack ", "SP");
             }
             suiteMask =
-                WmiUtil.getUint32(versionInfo, Win32OperatingSystem.OSVersionProperty.SUITEMASK, 0);
+                    WmiUtil.getUint32(versionInfo, Win32OperatingSystem.OSVersionProperty.SUITEMASK, 0);
             buildNumber =
-                WmiUtil.getString(versionInfo, Win32OperatingSystem.OSVersionProperty.BUILDNUMBER,
-                    0);
+                    WmiUtil.getString(versionInfo, Win32OperatingSystem.OSVersionProperty.BUILDNUMBER,
+                            0);
         }
         String codeName = parseCodeName(suiteMask);
         return new Pair<>("Windows", new OSVersionInfo(version, codeName, buildNumber));
     }
 
-    @Override protected int queryBitness(int jvmBitness) {
+    @Override
+    protected int queryBitness(int jvmBitness) {
         if (jvmBitness < 64 && System.getenv("ProgramFiles(x86)") != null && IS_VISTA_OR_GREATER) {
             WmiResult<Win32Processor.BitnessProperty> bitnessMap = Win32Processor.queryBitness();
             if (bitnessMap.getResultCount() > 0) {
                 return WmiUtil.getUint16(bitnessMap, Win32Processor.BitnessProperty.ADDRESSWIDTH,
-                    0);
+                        0);
             }
         }
         return jvmBitness;
     }
 
-    @Override public boolean isElevated() {
+    @Override
+    public boolean isElevated() {
         HANDLEByReference hToken = new HANDLEByReference();
         boolean success = Advapi32.INSTANCE.OpenProcessToken(Kernel32.INSTANCE.GetCurrentProcess(),
-            WinNT.TOKEN_QUERY, hToken);
+                WinNT.TOKEN_QUERY, hToken);
         if (!success) {
-            LOG.error("OpenProcessToken failed. Error: {}", Native.getLastError());
+            LOG.error("OpenProcessToken failed. Error: {}" + Native.getLastError());
             return false;
         }
         try {
             WinNT.TOKEN_ELEVATION elevation = new WinNT.TOKEN_ELEVATION();
             if (Advapi32.INSTANCE.GetTokenInformation(hToken.getValue(), TOKENELEVATION, elevation,
-                elevation.size(), new IntByReference())) {
+                    elevation.size(), new IntByReference())) {
                 return elevation.TokenIsElevated > 0;
             }
         } finally {
@@ -404,42 +409,50 @@ import static com.zestic.system.util.Memoizer.memoize;
         return false;
     }
 
-    @Override public FileSystem getFileSystem() {
+    @Override
+    public FileSystem getFileSystem() {
         return new WindowsFileSystem();
     }
 
-    @Override public InternetProtocolStats getInternetProtocolStats() {
+    @Override
+    public InternetProtocolStats getInternetProtocolStats() {
         return new WindowsInternetProtocolStats();
     }
 
-    @Override public List<OSSession> getSessions() {
+    @Override
+    public List<OSSession> getSessions() {
         List<OSSession> whoList = HkeyUserData.queryUserSessions();
         whoList.addAll(SessionWtsData.queryUserSessions());
         whoList.addAll(NetSessionData.queryUserSessions());
         return whoList;
     }
 
-    @Override public List<OSProcess> getProcesses(Collection<Integer> pids) {
+    @Override
+    public List<OSProcess> getProcesses(Collection<Integer> pids) {
         return processMapToList(pids);
     }
 
-    @Override public List<OSProcess> queryAllProcesses() {
+    @Override
+    public List<OSProcess> queryAllProcesses() {
         return processMapToList(null);
     }
 
-    @Override public List<OSProcess> queryChildProcesses(int parentPid) {
+    @Override
+    public List<OSProcess> queryChildProcesses(int parentPid) {
         Set<Integer> descendantPids =
-            getChildrenOrDescendants(getParentPidsFromSnapshot(), parentPid, false);
+                getChildrenOrDescendants(getParentPidsFromSnapshot(), parentPid, false);
         return processMapToList(descendantPids);
     }
 
-    @Override public List<OSProcess> queryDescendantProcesses(int parentPid) {
+    @Override
+    public List<OSProcess> queryDescendantProcesses(int parentPid) {
         Set<Integer> descendantPids =
-            getChildrenOrDescendants(getParentPidsFromSnapshot(), parentPid, true);
+                getChildrenOrDescendants(getParentPidsFromSnapshot(), parentPid, true);
         return processMapToList(descendantPids);
     }
 
-    @Override public OSProcess getProcess(int pid) {
+    @Override
+    public OSProcess getProcess(int pid) {
         List<OSProcess> procList = processMapToList(Arrays.asList(pid));
         return procList.isEmpty() ? null : procList.get(0);
     }
@@ -447,12 +460,12 @@ import static com.zestic.system.util.Memoizer.memoize;
     private List<OSProcess> processMapToList(Collection<Integer> pids) {
         // Get data from the registry if possible
         Map<Integer, ProcessPerformanceData.PerfCounterBlock> processMap =
-            processMapFromRegistry.get();
+                processMapFromRegistry.get();
         // otherwise performance counters with WMI backup
         if (processMap == null || processMap.isEmpty()) {
             processMap = (pids == null) ?
-                processMapFromPerfCounters.get() :
-                ProcessPerformanceData.buildProcessMapFromPerfCounters(pids);
+                    processMapFromPerfCounters.get() :
+                    ProcessPerformanceData.buildProcessMapFromPerfCounters(pids);
         }
         Map<Integer, ThreadPerformanceData.PerfCounterBlock> threadMap = null;
         if (USE_PROCSTATE_SUSPENDED) {
@@ -461,8 +474,8 @@ import static com.zestic.system.util.Memoizer.memoize;
             // otherwise performance counters with WMI backup
             if (threadMap == null || threadMap.isEmpty()) {
                 threadMap = (pids == null) ?
-                    threadMapFromPerfCounters.get() :
-                    ThreadPerformanceData.buildThreadMapFromPerfCounters(pids);
+                        threadMapFromPerfCounters.get() :
+                        ThreadPerformanceData.buildThreadMapFromPerfCounters(pids);
             }
         }
 
@@ -478,25 +491,28 @@ import static com.zestic.system.util.Memoizer.memoize;
         return processList;
     }
 
-    @Override public int getProcessId() {
+    @Override
+    public int getProcessId() {
         return Kernel32.INSTANCE.GetCurrentProcessId();
     }
 
-    @Override public int getProcessCount() {
+    @Override
+    public int getProcessCount() {
         PERFORMANCE_INFORMATION perfInfo = new PERFORMANCE_INFORMATION();
         if (!Psapi.INSTANCE.GetPerformanceInfo(perfInfo, perfInfo.size())) {
-            LOG.error("Failed to get Performance Info. Error code: {}",
-                Kernel32.INSTANCE.GetLastError());
+            LOG.error("Failed to get Performance Info. Error code: {}" +
+                    Kernel32.INSTANCE.GetLastError());
             return 0;
         }
         return perfInfo.ProcessCount.intValue();
     }
 
-    @Override public int getThreadCount() {
+    @Override
+    public int getThreadCount() {
         PERFORMANCE_INFORMATION perfInfo = new PERFORMANCE_INFORMATION();
         if (!Psapi.INSTANCE.GetPerformanceInfo(perfInfo, perfInfo.size())) {
-            LOG.error("Failed to get Performance Info. Error code: {}",
-                Kernel32.INSTANCE.GetLastError());
+            LOG.error("Failed to get Performance Info. Error code: {}" +
+                    Kernel32.INSTANCE.GetLastError());
             return 0;
         }
         return perfInfo.ThreadCount.intValue();
@@ -507,23 +523,27 @@ import static com.zestic.system.util.Memoizer.memoize;
      * queries to processes with same bitness as the current one
      */
 
-    @Override public long getSystemUptime() {
+    @Override
+    public long getSystemUptime() {
         return querySystemUptime();
     }
 
-    @Override public long getSystemBootTime() {
+    @Override
+    public long getSystemBootTime() {
         return BOOTTIME;
     }
 
-    @Override public NetworkParams getNetworkParams() {
+    @Override
+    public NetworkParams getNetworkParams() {
         return new WindowsNetworkParams();
     }
 
-    @Override public List<OSService> getServices() {
+    @Override
+    public List<OSService> getServices() {
         try (W32ServiceManager sm = new W32ServiceManager()) {
             sm.open(Winsvc.SC_MANAGER_ENUMERATE_SERVICE);
             Winsvc.ENUM_SERVICE_STATUS_PROCESS[] services =
-                sm.enumServicesStatusExProcess(WinNT.SERVICE_WIN32, Winsvc.SERVICE_STATE_ALL, null);
+                    sm.enumServicesStatusExProcess(WinNT.SERVICE_WIN32, Winsvc.SERVICE_STATE_ALL, null);
             List<OSService> svcArray = new ArrayList<>();
             for (Winsvc.ENUM_SERVICE_STATUS_PROCESS service : services) {
                 OSService.State state;
@@ -539,17 +559,18 @@ import static com.zestic.system.util.Memoizer.memoize;
                         break;
                 }
                 svcArray.add(
-                    new OSService(service.lpDisplayName, service.ServiceStatusProcess.dwProcessId,
-                        state));
+                        new OSService(service.lpDisplayName, service.ServiceStatusProcess.dwProcessId,
+                                state));
             }
             return svcArray;
         } catch (com.sun.jna.platform.win32.Win32Exception ex) {
-            LOG.error("Win32Exception: {}", ex.getMessage());
+            LOG.error("Win32Exception: {}" + ex.getMessage());
             return Collections.emptyList();
         }
     }
 
-    @Override public List<OSDesktopWindow> getDesktopWindows(boolean visibleOnly) {
+    @Override
+    public List<OSDesktopWindow> getDesktopWindows(boolean visibleOnly) {
         return EnumWindows.queryDesktopWindows(visibleOnly);
     }
 }

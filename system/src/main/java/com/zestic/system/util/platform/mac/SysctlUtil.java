@@ -28,16 +28,16 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.jna.platform.mac.SystemB;
 
 /*
  * Provides access to sysctl calls on macOS
  */
-@ThreadSafe public final class SysctlUtil {
+@ThreadSafe
+public final class SysctlUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(SysctlUtil.class);
 
     private static final String SYSCTL_FAIL = "Failed sysctl call: {}, Error code: {}";
 
@@ -55,7 +55,7 @@ import com.zestic.system.jna.platform.mac.SystemB;
         size_t.ByReference size = new size_t.ByReference(com.sun.jna.platform.mac.SystemB.INT_SIZE);
         Pointer p = new Memory(size.longValue());
         if (0 != SystemB.INSTANCE.sysctlbyname(name, p, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return def;
         }
         return p.getInt(0);
@@ -70,10 +70,10 @@ import com.zestic.system.jna.platform.mac.SystemB;
      */
     public static long sysctl(String name, long def) {
         size_t.ByReference size =
-            new size_t.ByReference(com.sun.jna.platform.mac.SystemB.UINT64_SIZE);
+                new size_t.ByReference(com.sun.jna.platform.mac.SystemB.UINT64_SIZE);
         Pointer p = new Memory(size.longValue());
         if (0 != SystemB.INSTANCE.sysctlbyname(name, p, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return def;
         }
         return p.getLong(0);
@@ -90,13 +90,13 @@ import com.zestic.system.jna.platform.mac.SystemB;
         // Call first time with null pointer to get value of size
         size_t.ByReference size = new size_t.ByReference();
         if (0 != SystemB.INSTANCE.sysctlbyname(name, null, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return def;
         }
         // Add 1 to size for null terminated string
         Pointer p = new Memory(size.longValue() + 1L);
         if (0 != SystemB.INSTANCE.sysctlbyname(name, p, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return def;
         }
         return p.getString(0);
@@ -111,8 +111,8 @@ import com.zestic.system.jna.platform.mac.SystemB;
      */
     public static boolean sysctl(String name, Structure struct) {
         if (0 != SystemB.INSTANCE.sysctlbyname(name, struct.getPointer(),
-            new size_t.ByReference(struct.size()), null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+                new size_t.ByReference(struct.size()), null, size_t.ZERO)) {
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return false;
         }
         struct.read();
@@ -129,12 +129,12 @@ import com.zestic.system.jna.platform.mac.SystemB;
     public static Memory sysctl(String name) {
         size_t.ByReference size = new size_t.ByReference();
         if (0 != SystemB.INSTANCE.sysctlbyname(name, null, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return null;
         }
         Memory m = new Memory(size.longValue());
         if (0 != SystemB.INSTANCE.sysctlbyname(name, m, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+            logger.error(SYSCTL_FAIL + " " + name + " " + Native.getLastError());
             return null;
         }
         return m;

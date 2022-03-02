@@ -32,8 +32,8 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Kernel32Util;
 import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.ptr.IntByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.common.AbstractNetworkParams;
 import com.zestic.system.util.ExecutingCommand;
 import com.zestic.system.util.ParseUtil;
@@ -47,7 +47,7 @@ import java.util.List;
  */
 @ThreadSafe final class WindowsNetworkParams extends AbstractNetworkParams {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final int COMPUTER_NAME_DNS_DOMAIN_FULLY_QUALIFIED = 3;
 
@@ -78,7 +78,7 @@ import java.util.List;
         IntByReference bufferSize = new IntByReference(buffer.length);
         if (!Kernel32.INSTANCE.GetComputerNameEx(COMPUTER_NAME_DNS_DOMAIN_FULLY_QUALIFIED, buffer,
             bufferSize)) {
-            LOG.error("Failed to get dns domain name. Error code: {}",
+            LOG.error("Failed to get dns domain name. Error code: {}" +
                 Kernel32.INSTANCE.GetLastError());
             return "";
         }
@@ -89,14 +89,14 @@ import java.util.List;
         IntByReference bufferSize = new IntByReference();
         int ret = IPHlpAPI.INSTANCE.GetNetworkParams(null, bufferSize);
         if (ret != WinError.ERROR_BUFFER_OVERFLOW) {
-            LOG.error("Failed to get network parameters buffer size. Error code: {}", ret);
+            LOG.error("Failed to get network parameters buffer size. Error code: {}" + ret);
             return new String[0];
         }
 
         Memory buffer = new Memory(bufferSize.getValue());
         ret = IPHlpAPI.INSTANCE.GetNetworkParams(buffer, bufferSize);
         if (ret != 0) {
-            LOG.error("Failed to get network parameters. Error code: {}", ret);
+            LOG.error("Failed to get network parameters. Error code: {}" + ret);
             return new String[0];
         }
         FIXED_INFO fixedInfo = new FIXED_INFO(buffer);

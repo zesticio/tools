@@ -24,9 +24,9 @@
 package com.zestic.system.util.platform.windows;
 
 import com.sun.jna.platform.win32.WinNT.HANDLEByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.NotThreadSafe;
 import com.zestic.system.util.FormatUtil;
+import org.apache.log4j.Priority;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +37,10 @@ import java.util.Map;
  * This class is not thread safe. Each query handler instance should only be
  * used in a single thread, preferably in a try-with-resources block.
  */
-@NotThreadSafe public final class PerfCounterQueryHandler implements AutoCloseable {
+@NotThreadSafe
+public final class PerfCounterQueryHandler implements AutoCloseable {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
 
     // Map of counter handles
     private Map<PerfDataUtil.PerfCounter, HANDLEByReference> counterHandleMap = new HashMap<>();
@@ -57,7 +58,7 @@ import java.util.Map;
         if (this.queryHandle == null) {
             this.queryHandle = new HANDLEByReference();
             if (!PerfDataUtil.openQuery(this.queryHandle)) {
-                LOG.warn("Failed to open a query for PDH counter: {}", counter.getCounterPath());
+                LOG.warn("Failed to open a query for PDH counter: {" + counter.getCounterPath() + "}");
                 this.queryHandle = null;
                 return false;
             }
@@ -65,7 +66,7 @@ import java.util.Map;
         // Get a new handle for the counter
         HANDLEByReference p = new HANDLEByReference();
         if (!PerfDataUtil.addCounter(this.queryHandle, counter.getCounterPath(), p)) {
-            LOG.warn("Failed to add counter for PDH counter: {}", counter.getCounterPath());
+            LOG.warn("Failed to add counter for PDH counter: {" + counter.getCounterPath() + "}");
             return false;
         }
         counterHandleMap.put(counter, p);
@@ -131,23 +132,23 @@ import java.util.Map;
      */
     public long queryCounter(PerfDataUtil.PerfCounter counter) {
         if (!counterHandleMap.containsKey(counter)) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Counter {} does not exist to query.", counter.getCounterPath());
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.warn("Counter {} does not exist to query." + counter.getCounterPath());
             }
             return 0;
         }
         long value = PerfDataUtil.queryCounter(counterHandleMap.get(counter));
         if (value < 0) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Error querying counter {}: {}", counter.getCounterPath(),
-                    String.format(FormatUtil.formatError((int) value)));
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.warn("Error querying counter {" + counter.getCounterPath() + "}: {" + String.format(FormatUtil.formatError((int) value)) + "}");
             }
             return 0L;
         }
         return value;
     }
 
-    @Override public void close() {
+    @Override
+    public void close() {
         removeAllCounters();
     }
 }

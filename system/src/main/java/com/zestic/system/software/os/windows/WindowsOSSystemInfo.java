@@ -27,14 +27,14 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinBase.SYSTEM_INFO;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.ptr.IntByReference;
-import com.zestic.log.Log;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 
 
 /*
  * Windows OS native system information.
  */
 public class WindowsOSSystemInfo {
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     // Populated during call to init
     private SYSTEM_INFO systemInfo = null;
@@ -72,7 +72,7 @@ public class WindowsOSSystemInfo {
             }
         } catch (UnsatisfiedLinkError e) {
             // no WOW64 support
-            LOG.trace("No WOW64 support: {}", e.getMessage());
+            LOG.trace("No WOW64 support: {}" + e.getMessage());
         }
 
         this.systemInfo = si;

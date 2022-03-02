@@ -23,7 +23,6 @@
  */
 package com.zestic.system.hardware.common;
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.CentralProcessor;
 import com.zestic.system.util.Memoizer;
@@ -35,24 +34,25 @@ import java.util.function.Supplier;
 /*
  * A CPU.
  */
-@ThreadSafe public abstract class AbstractCentralProcessor implements CentralProcessor {
+@ThreadSafe
+public abstract class AbstractCentralProcessor implements CentralProcessor {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AbstractCentralProcessor.class);
 
     private final Supplier<ProcessorIdentifier> cpuid = Memoizer.memoize(this::queryProcessorId);
     private final Supplier<Long> maxFreq =
-        Memoizer.memoize(this::queryMaxFreq, Memoizer.defaultExpiration());
+            Memoizer.memoize(this::queryMaxFreq, Memoizer.defaultExpiration());
     private final Supplier<long[]> currentFreq =
-        Memoizer.memoize(this::queryCurrentFreq, Memoizer.defaultExpiration());
+            Memoizer.memoize(this::queryCurrentFreq, Memoizer.defaultExpiration());
     private final Supplier<Long> contextSwitches =
-        Memoizer.memoize(this::queryContextSwitches, Memoizer.defaultExpiration());
+            Memoizer.memoize(this::queryContextSwitches, Memoizer.defaultExpiration());
     private final Supplier<Long> interrupts =
-        Memoizer.memoize(this::queryInterrupts, Memoizer.defaultExpiration());
+            Memoizer.memoize(this::queryInterrupts, Memoizer.defaultExpiration());
 
     private final Supplier<long[]> systemCpuLoadTicks =
-        Memoizer.memoize(this::querySystemCpuLoadTicks, Memoizer.defaultExpiration());
+            Memoizer.memoize(this::querySystemCpuLoadTicks, Memoizer.defaultExpiration());
     private final Supplier<long[][]> processorCpuLoadTicks =
-        Memoizer.memoize(this::queryProcessorCpuLoadTicks, Memoizer.defaultExpiration());
+            Memoizer.memoize(this::queryProcessorCpuLoadTicks, Memoizer.defaultExpiration());
 
     // Logical and Physical Processor Counts
     private final int physicalPackageCount;
@@ -92,7 +92,7 @@ import java.util.function.Supplier;
      * @return The Processor ID string
      */
     protected static String createProcessorID(String stepping, String model, String family,
-        String[] flags) {
+                                              String[] flags) {
         long processorIdBytes = 0L;
         long steppingL = ParseUtil.parseLongOrDefault(stepping, 0L);
         long modelL = ParseUtil.parseLongOrDefault(model, 0L);
@@ -219,11 +219,13 @@ import java.util.function.Supplier;
      */
     protected abstract ProcessorIdentifier queryProcessorId();
 
-    @Override public ProcessorIdentifier getProcessorIdentifier() {
+    @Override
+    public ProcessorIdentifier getProcessorIdentifier() {
         return cpuid.get();
     }
 
-    @Override public long getMaxFreq() {
+    @Override
+    public long getMaxFreq() {
         return maxFreq.get();
     }
 
@@ -234,7 +236,8 @@ import java.util.function.Supplier;
      */
     protected abstract long queryMaxFreq();
 
-    @Override public long[] getCurrentFreq() {
+    @Override
+    public long[] getCurrentFreq() {
         long[] freq = currentFreq.get();
         if (freq.length == getLogicalProcessorCount()) {
             return freq;
@@ -251,7 +254,8 @@ import java.util.function.Supplier;
      */
     protected abstract long[] queryCurrentFreq();
 
-    @Override public long getContextSwitches() {
+    @Override
+    public long getContextSwitches() {
         return contextSwitches.get();
     }
 
@@ -262,7 +266,8 @@ import java.util.function.Supplier;
      */
     protected abstract long queryContextSwitches();
 
-    @Override public long getInterrupts() {
+    @Override
+    public long getInterrupts() {
         return interrupts.get();
     }
 
@@ -273,11 +278,13 @@ import java.util.function.Supplier;
      */
     protected abstract long queryInterrupts();
 
-    @Override public List<LogicalProcessor> getLogicalProcessors() {
+    @Override
+    public List<LogicalProcessor> getLogicalProcessors() {
         return this.logicalProcessors;
     }
 
-    @Override public long[] getSystemCpuLoadTicks() {
+    @Override
+    public long[] getSystemCpuLoadTicks() {
         return systemCpuLoadTicks.get();
     }
 
@@ -288,7 +295,8 @@ import java.util.function.Supplier;
      */
     protected abstract long[] querySystemCpuLoadTicks();
 
-    @Override public long[][] getProcessorCpuLoadTicks() {
+    @Override
+    public long[][] getProcessorCpuLoadTicks() {
         return processorCpuLoadTicks.get();
     }
 
@@ -299,11 +307,12 @@ import java.util.function.Supplier;
      */
     protected abstract long[][] queryProcessorCpuLoadTicks();
 
-    @Override public double getSystemCpuLoadBetweenTicks(long[] oldTicks) {
+    @Override
+    public double getSystemCpuLoadBetweenTicks(long[] oldTicks) {
         if (oldTicks.length != TickType.values().length) {
             throw new IllegalArgumentException(
-                "Tick array " + oldTicks.length + " should have " + TickType.values().length
-                    + " elements");
+                    "Tick array " + oldTicks.length + " should have " + TickType.values().length
+                            + " elements");
         }
         long[] ticks = getSystemCpuLoadTicks();
         // Calculate total
@@ -313,18 +322,19 @@ import java.util.function.Supplier;
         }
         // Calculate idle from difference in idle and IOwait
         long idle = ticks[TickType.IDLE.getIndex()] + ticks[TickType.IOWAIT.getIndex()]
-            - oldTicks[TickType.IDLE.getIndex()] - oldTicks[TickType.IOWAIT.getIndex()];
-        LOG.trace("Total ticks: {}  Idle ticks: {}", total, idle);
+                - oldTicks[TickType.IDLE.getIndex()] - oldTicks[TickType.IOWAIT.getIndex()];
+        logger.trace("Total ticks: {}  Idle ticks: {}" + total + " " + idle);
 
         return total > 0 && idle >= 0 ? (double) (total - idle) / total : 0d;
     }
 
-    @Override public double[] getProcessorCpuLoadBetweenTicks(long[][] oldTicks) {
+    @Override
+    public double[] getProcessorCpuLoadBetweenTicks(long[][] oldTicks) {
         if (oldTicks.length != this.logicalProcessorCount
-            || oldTicks[0].length != TickType.values().length) {
+                || oldTicks[0].length != TickType.values().length) {
             throw new IllegalArgumentException(
-                "Tick array " + oldTicks.length + " should have " + this.logicalProcessorCount
-                    + " arrays, each of which has " + TickType.values().length + " elements");
+                    "Tick array " + oldTicks.length + " should have " + this.logicalProcessorCount
+                            + " arrays, each of which has " + TickType.values().length + " elements");
         }
         long[][] ticks = getProcessorCpuLoadTicks();
         double[] load = new double[this.logicalProcessorCount];
@@ -335,29 +345,33 @@ import java.util.function.Supplier;
             }
             // Calculate idle from difference in idle and IOwait
             long idle =
-                ticks[cpu][TickType.IDLE.getIndex()] + ticks[cpu][TickType.IOWAIT.getIndex()]
-                    - oldTicks[cpu][TickType.IDLE.getIndex()]
-                    - oldTicks[cpu][TickType.IOWAIT.getIndex()];
-            LOG.trace("CPU: {}  Total ticks: {}  Idle ticks: {}", cpu, total, idle);
+                    ticks[cpu][TickType.IDLE.getIndex()] + ticks[cpu][TickType.IOWAIT.getIndex()]
+                            - oldTicks[cpu][TickType.IDLE.getIndex()]
+                            - oldTicks[cpu][TickType.IOWAIT.getIndex()];
+            logger.trace("CPU: {}  Total ticks: {}  Idle ticks: {}" + cpu + " " + total + " " + idle);
             // update
             load[cpu] = total > 0 && idle >= 0 ? (double) (total - idle) / total : 0d;
         }
         return load;
     }
 
-    @Override public int getLogicalProcessorCount() {
+    @Override
+    public int getLogicalProcessorCount() {
         return this.logicalProcessorCount;
     }
 
-    @Override public int getPhysicalProcessorCount() {
+    @Override
+    public int getPhysicalProcessorCount() {
         return this.physicalProcessorCount;
     }
 
-    @Override public int getPhysicalPackageCount() {
+    @Override
+    public int getPhysicalPackageCount() {
         return this.physicalPackageCount;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder(getProcessorIdentifier().getName());
         sb.append("\n ").append(getPhysicalPackageCount()).append(" physical CPU package(s)");
         sb.append("\n ").append(getPhysicalProcessorCount()).append(" physical CPU core(s)");
@@ -365,7 +379,7 @@ import java.util.function.Supplier;
         sb.append('\n').append("Identifier: ").append(getProcessorIdentifier().getIdentifier());
         sb.append('\n').append("ProcessorID: ").append(getProcessorIdentifier().getProcessorID());
         sb.append('\n').append("Microarchitecture: ")
-            .append(getProcessorIdentifier().getMicroarchitecture());
+                .append(getProcessorIdentifier().getMicroarchitecture());
         return sb.toString();
     }
 }

@@ -31,9 +31,9 @@ import com.sun.jna.platform.mac.SystemB;
 import com.sun.jna.platform.mac.SystemB.HostCpuLoadInfo;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.common.AbstractCentralProcessor;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.FormatUtil;
 import com.zestic.system.util.ParseUtil;
 import com.zestic.system.util.Util;
@@ -49,16 +49,17 @@ import static com.zestic.system.util.Memoizer.memoize;
 /*
  * A CPU.
  */
-@ThreadSafe final class MacCentralProcessor extends AbstractCentralProcessor {
+@ThreadSafe
+final class MacCentralProcessor extends AbstractCentralProcessor {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final int ROSETTA_CPUTYPE = 0x00000007;
     private static final int ROSETTA_CPUFAMILY = 0x573b5eec;
     private static final int M1_CPUTYPE = 0x0100000C;
     private static final int M1_CPUFAMILY = 0x1b588bb3;
     private final Supplier<String> vendor = memoize(MacCentralProcessor::platformExpert);
     private final Supplier<Triplet<Integer, Integer, Long>> typeFamilyFreq =
-        memoize(MacCentralProcessor::queryArmCpu);
+            memoize(MacCentralProcessor::queryArmCpu);
 
     private static String platformExpert() {
         String manufacturer = null;
@@ -112,7 +113,7 @@ import static com.zestic.system.util.Memoizer.memoize;
             // Hard coded for M1 for now. Need to update and make more configurable for M1X,
             // M2, etc.
             List<String> m1compatible =
-                Arrays.asList("ARM,v8", "apple,firestorm", "apple,icestorm");
+                    Arrays.asList("ARM,v8", "apple,firestorm", "apple,icestorm");
             compatibleStrSet.retainAll(m1compatible);
             if (compatibleStrSet.size() == m1compatible.size()) {
                 type = M1_CPUTYPE;
@@ -122,7 +123,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         return new Triplet<>(type, family, freq);
     }
 
-    @Override protected ProcessorIdentifier queryProcessorId() {
+    @Override
+    protected ProcessorIdentifier queryProcessorId() {
         String cpuName = SysctlUtil.sysctl("machdep.cpu.brand_string", "");
         String cpuVendor;
         String cpuStepping;
@@ -163,7 +165,7 @@ import static com.zestic.system.util.Memoizer.memoize;
             long processorIdBits = 0L;
             processorIdBits |= SysctlUtil.sysctl("machdep.cpu.signature", 0);
             processorIdBits |=
-                (SysctlUtil.sysctl("machdep.cpu.feature_bits", 0L) & 0xffffffff) << 32;
+                    (SysctlUtil.sysctl("machdep.cpu.feature_bits", 0L) & 0xffffffff) << 32;
             processorID = String.format("%016x", processorIdBits);
         }
         if (cpuFreq == 0) {
@@ -172,28 +174,30 @@ import static com.zestic.system.util.Memoizer.memoize;
         boolean cpu64bit = SysctlUtil.sysctl("hw.cpu64bit_capable", 0) != 0;
 
         return new ProcessorIdentifier(cpuVendor, cpuName, cpuFamily, cpuModel, cpuStepping,
-            processorID, cpu64bit, cpuFreq);
+                processorID, cpu64bit, cpuFreq);
     }
 
-    @Override protected List<LogicalProcessor> initProcessorCounts() {
+    @Override
+    protected List<LogicalProcessor> initProcessorCounts() {
         int logicalProcessorCount = SysctlUtil.sysctl("hw.logicalcpu", 1);
         int physicalProcessorCount = SysctlUtil.sysctl("hw.physicalcpu", 1);
         int physicalPackageCount = SysctlUtil.sysctl("hw.packages", 1);
         List<LogicalProcessor> logProcs = new ArrayList<>(logicalProcessorCount);
         for (int i = 0; i < logicalProcessorCount; i++) {
             logProcs.add(new LogicalProcessor(i, i * physicalProcessorCount / logicalProcessorCount,
-                i * physicalPackageCount / logicalProcessorCount));
+                    i * physicalPackageCount / logicalProcessorCount));
         }
         return logProcs;
     }
 
-    @Override public long[] querySystemCpuLoadTicks() {
+    @Override
+    public long[] querySystemCpuLoadTicks() {
         long[] ticks = new long[TickType.values().length];
         int machPort = SystemB.INSTANCE.mach_host_self();
         HostCpuLoadInfo cpuLoadInfo = new HostCpuLoadInfo();
         if (0 != SystemB.INSTANCE.host_statistics(machPort, SystemB.HOST_CPU_LOAD_INFO, cpuLoadInfo,
-            new IntByReference(cpuLoadInfo.size()))) {
-            LOG.error("Failed to get System CPU ticks. Error code: {} ", Native.getLastError());
+                new IntByReference(cpuLoadInfo.size()))) {
+            LOG.error("Failed to get System CPU ticks. Error code: {" + Native.getLastError() + "} ");
             return ticks;
         }
 
@@ -205,17 +209,20 @@ import static com.zestic.system.util.Memoizer.memoize;
         return ticks;
     }
 
-    @Override public long[] queryCurrentFreq() {
+    @Override
+    public long[] queryCurrentFreq() {
         long[] freq = new long[1];
         freq[0] = SysctlUtil.sysctl("hw.cpufrequency", getProcessorIdentifier().getVendorFreq());
         return freq;
     }
 
-    @Override public long queryMaxFreq() {
+    @Override
+    public long queryMaxFreq() {
         return SysctlUtil.sysctl("hw.cpufrequency_max", getProcessorIdentifier().getVendorFreq());
     }
 
-    @Override public double[] getSystemLoadAverage(int nelem) {
+    @Override
+    public double[] getSystemLoadAverage(int nelem) {
         if (nelem < 1 || nelem > 3) {
             throw new IllegalArgumentException("Must include from one to three elements.");
         }
@@ -227,7 +234,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         return average;
     }
 
-    @Override public long[][] queryProcessorCpuLoadTicks() {
+    @Override
+    public long[][] queryProcessorCpuLoadTicks() {
         long[][] ticks = new long[getLogicalProcessorCount()][TickType.values().length];
 
         int machPort = SystemB.INSTANCE.mach_host_self();
@@ -236,8 +244,8 @@ import static com.zestic.system.util.Memoizer.memoize;
         PointerByReference procCpuLoadInfo = new PointerByReference();
         IntByReference procInfoCount = new IntByReference();
         if (0 != SystemB.INSTANCE.host_processor_info(machPort, SystemB.PROCESSOR_CPU_LOAD_INFO,
-            procCount, procCpuLoadInfo, procInfoCount)) {
-            LOG.error("Failed to update CPU Load. Error code: {}", Native.getLastError());
+                procCount, procCpuLoadInfo, procInfoCount)) {
+            LOG.error("Failed to update CPU Load. Error code: {" + Native.getLastError() + "}");
             return ticks;
         }
 
@@ -245,25 +253,27 @@ import static com.zestic.system.util.Memoizer.memoize;
         for (int cpu = 0; cpu < procCount.getValue(); cpu++) {
             int offset = cpu * SystemB.CPU_STATE_MAX;
             ticks[cpu][TickType.USER.getIndex()] =
-                FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_USER]);
+                    FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_USER]);
             ticks[cpu][TickType.NICE.getIndex()] =
-                FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_NICE]);
+                    FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_NICE]);
             ticks[cpu][TickType.SYSTEM.getIndex()] =
-                FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_SYSTEM]);
+                    FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_SYSTEM]);
             ticks[cpu][TickType.IDLE.getIndex()] =
-                FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_IDLE]);
+                    FormatUtil.getUnsignedInt(cpuTicks[offset + SystemB.CPU_STATE_IDLE]);
         }
         return ticks;
     }
 
-    @Override public long queryContextSwitches() {
+    @Override
+    public long queryContextSwitches() {
         // Not available on macOS since at least 10.3.9. Early versions may have
         // provided access to the vmmeter structure using sysctl [CTL_VM, VM_METER] but
         // it now fails (ENOENT) and there is no other reference to it in source code
         return 0L;
     }
 
-    @Override public long queryInterrupts() {
+    @Override
+    public long queryInterrupts() {
         // Not available on macOS since at least 10.3.9. Early versions may have
         // provided access to the vmmeter structure using sysctl [CTL_VM, VM_METER] but
         // it now fails (ENOENT) and there is no other reference to it in source code

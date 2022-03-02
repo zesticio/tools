@@ -28,7 +28,6 @@ import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.Psapi;
 import com.sun.jna.platform.win32.Psapi.PERFORMANCE_INFORMATION;
 import com.sun.jna.platform.win32.VersionHelpers;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.windows.wmi.Win32PhysicalMemory;
 import com.zestic.system.driver.windows.wmi.Win32PhysicalMemory.PhysicalMemoryProperty;
@@ -49,14 +48,15 @@ import static com.zestic.system.util.Memoizer.memoize;
 /*
  * Memory obtained by Performance Info.
  */
-@ThreadSafe final class WindowsGlobalMemory extends AbstractGlobalMemory {
+@ThreadSafe
+final class WindowsGlobalMemory extends AbstractGlobalMemory {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(WindowsVirtualMemory.class);
 
     private static final boolean IS_WINDOWS10_OR_GREATER = VersionHelpers.IsWindows10OrGreater();
 
     private final Supplier<Triplet<Long, Long, Long>> availTotalSize =
-        memoize(WindowsGlobalMemory::readPerfInfo, defaultExpiration());
+            memoize(WindowsGlobalMemory::readPerfInfo, defaultExpiration());
 
     private final Supplier<VirtualMemory> vm = memoize(this::createVirtualMemory);
 
@@ -194,8 +194,8 @@ import static com.zestic.system.util.Memoizer.memoize;
     private static Triplet<Long, Long, Long> readPerfInfo() {
         PERFORMANCE_INFORMATION performanceInfo = new PERFORMANCE_INFORMATION();
         if (!Psapi.INSTANCE.GetPerformanceInfo(performanceInfo, performanceInfo.size())) {
-            LOG.error("Failed to get Performance Info. Error code: {}",
-                Kernel32.INSTANCE.GetLastError());
+            logger.error("Failed to get Performance Info. Error code: {}" +
+                    Kernel32.INSTANCE.GetLastError());
             return new Triplet<>(0L, 0L, 4098L);
         }
         long pageSize = performanceInfo.PageSize.longValue();
@@ -204,19 +204,23 @@ import static com.zestic.system.util.Memoizer.memoize;
         return new Triplet<>(memAvailable, memTotal, pageSize);
     }
 
-    @Override public long getAvailable() {
+    @Override
+    public long getAvailable() {
         return availTotalSize.get().getA();
     }
 
-    @Override public long getTotal() {
+    @Override
+    public long getTotal() {
         return availTotalSize.get().getB();
     }
 
-    @Override public long getPageSize() {
+    @Override
+    public long getPageSize() {
         return availTotalSize.get().getC();
     }
 
-    @Override public VirtualMemory getVirtualMemory() {
+    @Override
+    public VirtualMemory getVirtualMemory() {
         return vm.get();
     }
 
@@ -224,39 +228,40 @@ import static com.zestic.system.util.Memoizer.memoize;
         return new WindowsVirtualMemory(this);
     }
 
-    @Override public List<PhysicalMemory> getPhysicalMemory() {
+    @Override
+    public List<PhysicalMemory> getPhysicalMemory() {
         List<PhysicalMemory> physicalMemoryList = new ArrayList<>();
         if (IS_WINDOWS10_OR_GREATER) {
             WmiResult<PhysicalMemoryProperty> bankMap = Win32PhysicalMemory.queryphysicalMemory();
             for (int index = 0; index < bankMap.getResultCount(); index++) {
                 String bankLabel =
-                    WmiUtil.getString(bankMap, PhysicalMemoryProperty.BANKLABEL, index);
+                        WmiUtil.getString(bankMap, PhysicalMemoryProperty.BANKLABEL, index);
                 long capacity = WmiUtil.getUint64(bankMap, PhysicalMemoryProperty.CAPACITY, index);
                 long speed =
-                    WmiUtil.getUint32(bankMap, PhysicalMemoryProperty.SPEED, index) * 1_000_000L;
+                        WmiUtil.getUint32(bankMap, PhysicalMemoryProperty.SPEED, index) * 1_000_000L;
                 String manufacturer =
-                    WmiUtil.getString(bankMap, PhysicalMemoryProperty.MANUFACTURER, index);
+                        WmiUtil.getString(bankMap, PhysicalMemoryProperty.MANUFACTURER, index);
                 String memoryType = smBiosMemoryType(
-                    WmiUtil.getUint32(bankMap, PhysicalMemoryProperty.SMBIOSMEMORYTYPE, index));
+                        WmiUtil.getUint32(bankMap, PhysicalMemoryProperty.SMBIOSMEMORYTYPE, index));
                 physicalMemoryList.add(
-                    new PhysicalMemory(bankLabel, capacity, speed, manufacturer, memoryType));
+                        new PhysicalMemory(bankLabel, capacity, speed, manufacturer, memoryType));
             }
         } else {
             WmiResult<PhysicalMemoryPropertyWin8> bankMap =
-                Win32PhysicalMemory.queryphysicalMemoryWin8();
+                    Win32PhysicalMemory.queryphysicalMemoryWin8();
             for (int index = 0; index < bankMap.getResultCount(); index++) {
                 String bankLabel =
-                    WmiUtil.getString(bankMap, PhysicalMemoryPropertyWin8.BANKLABEL, index);
+                        WmiUtil.getString(bankMap, PhysicalMemoryPropertyWin8.BANKLABEL, index);
                 long capacity =
-                    WmiUtil.getUint64(bankMap, PhysicalMemoryPropertyWin8.CAPACITY, index);
+                        WmiUtil.getUint64(bankMap, PhysicalMemoryPropertyWin8.CAPACITY, index);
                 long speed = WmiUtil.getUint32(bankMap, PhysicalMemoryPropertyWin8.SPEED, index)
-                    * 1_000_000L;
+                        * 1_000_000L;
                 String manufacturer =
-                    WmiUtil.getString(bankMap, PhysicalMemoryPropertyWin8.MANUFACTURER, index);
+                        WmiUtil.getString(bankMap, PhysicalMemoryPropertyWin8.MANUFACTURER, index);
                 String memoryType = memoryType(
-                    WmiUtil.getUint16(bankMap, PhysicalMemoryPropertyWin8.MEMORYTYPE, index));
+                        WmiUtil.getUint16(bankMap, PhysicalMemoryPropertyWin8.MEMORYTYPE, index));
                 physicalMemoryList.add(
-                    new PhysicalMemory(bankLabel, capacity, speed, manufacturer, memoryType));
+                        new PhysicalMemory(bankLabel, capacity, speed, manufacturer, memoryType));
             }
         }
         return physicalMemoryList;

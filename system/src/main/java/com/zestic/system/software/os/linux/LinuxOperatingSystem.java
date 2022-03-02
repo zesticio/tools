@@ -26,12 +26,12 @@ package com.zestic.system.software.os.linux;
 import com.sun.jna.Native;
 import com.sun.jna.platform.linux.LibC;
 import com.sun.jna.platform.linux.LibC.Sysinfo;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.linux.Who;
 import com.zestic.system.driver.linux.proc.CpuStat;
 import com.zestic.system.driver.linux.proc.ProcessStat;
 import com.zestic.system.driver.linux.proc.UpTime;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.linux.LinuxLibc;
 import com.zestic.system.software.common.AbstractOperatingSystem;
 import com.zestic.system.software.os.*;
@@ -51,11 +51,12 @@ import java.util.*;
  * Linux kernel, an operating system kernel first released on September 17,
  * 1991, by Linus Torvalds. Linux is typically packaged in a Linux distribution.
  */
-@ThreadSafe public class LinuxOperatingSystem extends AbstractOperatingSystem {
+@ThreadSafe
+public class LinuxOperatingSystem extends AbstractOperatingSystem {
 
     // Package private for access from LinuxOSProcess
     static final long BOOTTIME;
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final String OS_RELEASE_LOG = "os-release: {}";
     private static final String LSB_RELEASE_A_LOG = "lsb_release -a: {}";
     private static final String LSB_RELEASE_LOG = "lsb-release: {}";
@@ -66,7 +67,7 @@ import java.util.*;
      * Jiffies per second, used for process time counters.
      */
     private static final long USER_HZ =
-        ParseUtil.parseLongOrDefault(ExecutingCommand.getFirstAnswer("getconf CLK_TCK"), 100L);
+            ParseUtil.parseLongOrDefault(ExecutingCommand.getFirstAnswer("getconf CLK_TCK"), 100L);
     // PPID is 4th numeric value in proc pid stat; subtract 1 for 0-index
     private static final int[] PPID_INDEX = {3};
 
@@ -116,8 +117,8 @@ import java.util.*;
         }
         // Grab PPID
         long[] statArray =
-            ParseUtil.parseStringToLongArray(stat, PPID_INDEX, ProcessStat.PROC_PID_STAT_LENGTH,
-                ' ');
+                ParseUtil.parseStringToLongArray(stat, PPID_INDEX, ProcessStat.PROC_PID_STAT_LENGTH,
+                        ' ');
         return (int) statArray[0];
     }
 
@@ -179,8 +180,8 @@ import java.util.*;
         // If we've gotten this far with no match, use the distrib-release
         // filename (defaults will eventually give "Unknown")
         String family = filenameToFamily(
-            etcDistribRelease.replace("/etc/", "").replace("release", "").replace("version", "")
-                .replace("-", "").replace("_", ""));
+                etcDistribRelease.replace("/etc/", "").replace("release", "").replace("version", "")
+                        .replace("-", "").replace("_", ""));
         return new Triplet<>(family, Constants.UNKNOWN, Constants.UNKNOWN);
     }
 
@@ -198,7 +199,7 @@ import java.util.*;
         // Search for NAME=
         for (String line : osRelease) {
             if (line.startsWith("VERSION=")) {
-                LOG.debug(OS_RELEASE_LOG, line);
+                LOG.debug(OS_RELEASE_LOG + line);
                 // remove beginning and ending '"' characters, etc from
                 // VERSION="14.04.4 LTS, Trusty Tahr" (Ubuntu style)
                 // or VERSION="17 (Beefy Miracle)" (os-release doc style)
@@ -215,12 +216,12 @@ import java.util.*;
                     codeName = split[1].trim();
                 }
             } else if (line.startsWith("NAME=") && family == null) {
-                LOG.debug(OS_RELEASE_LOG, line);
+                LOG.debug(OS_RELEASE_LOG + line);
                 // remove beginning and ending '"' characters, etc from
                 // NAME="Ubuntu"
                 family = line.replace("NAME=", "").replaceAll(DOUBLE_QUOTES, "").trim();
             } else if (line.startsWith("VERSION_ID=") && versionId.equals(Constants.UNKNOWN)) {
-                LOG.debug(OS_RELEASE_LOG, line);
+                LOG.debug(OS_RELEASE_LOG + line);
                 // remove beginning and ending '"' characters, etc from
                 // VERSION_ID="14.04"
                 versionId = line.replace("VERSION_ID=", "").replaceAll(DOUBLE_QUOTES, "").trim();
@@ -245,7 +246,7 @@ import java.util.*;
         // distribution concatenated, e.g., RedHat instead of Red Hat
         for (String line : ExecutingCommand.runNative("lsb_release -a")) {
             if (line.startsWith("Description:")) {
-                LOG.debug(LSB_RELEASE_A_LOG, line);
+                LOG.debug(LSB_RELEASE_A_LOG + line);
                 line = line.replace("Description:", "").trim();
                 if (line.contains(RELEASE_DELIM)) {
                     Triplet<String, String, String> triplet = parseRelease(line, RELEASE_DELIM);
@@ -258,13 +259,13 @@ import java.util.*;
                     }
                 }
             } else if (line.startsWith("Distributor ID:") && family == null) {
-                LOG.debug(LSB_RELEASE_A_LOG, line);
+                LOG.debug(LSB_RELEASE_A_LOG + line);
                 family = line.replace("Distributor ID:", "").trim();
             } else if (line.startsWith("Release:") && versionId.equals(Constants.UNKNOWN)) {
-                LOG.debug(LSB_RELEASE_A_LOG, line);
+                LOG.debug(LSB_RELEASE_A_LOG + line);
                 versionId = line.replace("Release:", "").trim();
             } else if (line.startsWith("Codename:") && codeName.equals(Constants.UNKNOWN)) {
-                LOG.debug(LSB_RELEASE_A_LOG, line);
+                LOG.debug(LSB_RELEASE_A_LOG + line);
                 codeName = line.replace("Codename:", "").trim();
             }
         }
@@ -286,9 +287,9 @@ import java.util.*;
         // Search for NAME=
         for (String line : osRelease) {
             if (line.startsWith("DISTRIB_DESCRIPTION=")) {
-                LOG.debug(LSB_RELEASE_LOG, line);
+                LOG.debug(LSB_RELEASE_LOG + line);
                 line =
-                    line.replace("DISTRIB_DESCRIPTION=", "").replaceAll(DOUBLE_QUOTES, "").trim();
+                        line.replace("DISTRIB_DESCRIPTION=", "").replaceAll(DOUBLE_QUOTES, "").trim();
                 if (line.contains(RELEASE_DELIM)) {
                     Triplet<String, String, String> triplet = parseRelease(line, RELEASE_DELIM);
                     family = triplet.getA();
@@ -300,16 +301,16 @@ import java.util.*;
                     }
                 }
             } else if (line.startsWith("DISTRIB_ID=") && family == null) {
-                LOG.debug(LSB_RELEASE_LOG, line);
+                LOG.debug(LSB_RELEASE_LOG + line);
                 family = line.replace("DISTRIB_ID=", "").replaceAll(DOUBLE_QUOTES, "").trim();
             } else if (line.startsWith("DISTRIB_RELEASE=") && versionId.equals(Constants.UNKNOWN)) {
-                LOG.debug(LSB_RELEASE_LOG, line);
+                LOG.debug(LSB_RELEASE_LOG + line);
                 versionId =
-                    line.replace("DISTRIB_RELEASE=", "").replaceAll(DOUBLE_QUOTES, "").trim();
+                        line.replace("DISTRIB_RELEASE=", "").replaceAll(DOUBLE_QUOTES, "").trim();
             } else if (line.startsWith("DISTRIB_CODENAME=") && codeName.equals(Constants.UNKNOWN)) {
-                LOG.debug(LSB_RELEASE_LOG, line);
+                LOG.debug(LSB_RELEASE_LOG + line);
                 codeName =
-                    line.replace("DISTRIB_CODENAME=", "").replaceAll(DOUBLE_QUOTES, "").trim();
+                        line.replace("DISTRIB_CODENAME=", "").replaceAll(DOUBLE_QUOTES, "").trim();
             }
         }
         return family == null ? null : new Triplet<>(family, versionId, codeName);
@@ -328,7 +329,7 @@ import java.util.*;
             List<String> osRelease = FileUtil.readFile(filename);
             // Search for Distrib release x.x (Codename)
             for (String line : osRelease) {
-                LOG.debug("{}: {}", filename, line);
+                LOG.debug("{" + filename + "}: {" + line + "}");
                 if (line.contains(RELEASE_DELIM)) {
                     // If this parses properly we're done
                     return parseRelease(line, RELEASE_DELIM);
@@ -375,13 +376,13 @@ import java.util.*;
         File etc = new File("/etc");
         // Find any *_input files in that path
         File[] matchingFiles = etc.listFiles(//
-            f -> (f.getName().endsWith("-release") || //
-                f.getName().endsWith("-version") || //
-                f.getName().endsWith("_release") || //
-                f.getName().endsWith("_version")) //
-                && !(f.getName().endsWith("os-release") || //
-                f.getName().endsWith("lsb-release") || //
-                f.getName().endsWith("system-release")));
+                f -> (f.getName().endsWith("-release") || //
+                        f.getName().endsWith("-version") || //
+                        f.getName().endsWith("_release") || //
+                        f.getName().endsWith("_version")) //
+                        && !(f.getName().endsWith("os-release") || //
+                        f.getName().endsWith("lsb-release") || //
+                        f.getName().endsWith("system-release")));
         if (matchingFiles != null && matchingFiles.length > 0) {
             return matchingFiles[0].getPath();
         }
@@ -423,13 +424,15 @@ import java.util.*;
         return USER_HZ;
     }
 
-    @Override public String queryManufacturer() {
+    @Override
+    public String queryManufacturer() {
         return "GNU/Linux";
     }
 
-    @Override public Pair<String, OperatingSystem.OSVersionInfo> queryFamilyVersionInfo() {
+    @Override
+    public Pair<String, OperatingSystem.OSVersionInfo> queryFamilyVersionInfo() {
         Triplet<String, String, String> familyVersionCodename =
-            queryFamilyVersionCodenameFromReleaseFiles();
+                queryFamilyVersionCodenameFromReleaseFiles();
         String buildNumber = null;
         List<String> procVersion = FileUtil.readFile(ProcPath.VERSION);
         if (!procVersion.isEmpty()) {
@@ -442,31 +445,36 @@ import java.util.*;
             }
         }
         OperatingSystem.OSVersionInfo versionInfo =
-            new OperatingSystem.OSVersionInfo(familyVersionCodename.getB(),
-                familyVersionCodename.getC(), buildNumber);
+                new OperatingSystem.OSVersionInfo(familyVersionCodename.getB(),
+                        familyVersionCodename.getC(), buildNumber);
         return new Pair<>(familyVersionCodename.getA(), versionInfo);
     }
 
-    @Override protected int queryBitness(int jvmBitness) {
+    @Override
+    protected int queryBitness(int jvmBitness) {
         if (jvmBitness < 64 && !ExecutingCommand.getFirstAnswer("uname -m").contains("64")) {
             return jvmBitness;
         }
         return 64;
     }
 
-    @Override public FileSystem getFileSystem() {
+    @Override
+    public FileSystem getFileSystem() {
         return new LinuxFileSystem();
     }
 
-    @Override public InternetProtocolStats getInternetProtocolStats() {
+    @Override
+    public InternetProtocolStats getInternetProtocolStats() {
         return new LinuxInternetProtocolStats();
     }
 
-    @Override public List<OSSession> getSessions() {
+    @Override
+    public List<OSSession> getSessions() {
         return USE_WHO_COMMAND ? super.getSessions() : Who.queryUtxent();
     }
 
-    @Override public OSProcess getProcess(int pid) {
+    @Override
+    public OSProcess getProcess(int pid) {
         OSProcess proc = new LinuxOSProcess(pid);
         if (!proc.getState().equals(OSProcess.State.INVALID)) {
             return proc;
@@ -474,16 +482,18 @@ import java.util.*;
         return null;
     }
 
-    @Override public List<OSProcess> queryAllProcesses() {
+    @Override
+    public List<OSProcess> queryAllProcesses() {
         return queryChildProcesses(-1);
     }
 
-    @Override public List<OSProcess> queryChildProcesses(int parentPid) {
+    @Override
+    public List<OSProcess> queryChildProcesses(int parentPid) {
         File[] pidFiles = ProcessStat.getPidFiles();
         if (parentPid >= 0) {
             // Only return descendants
             return queryProcessList(
-                getChildrenOrDescendants(getParentPidsFromProcFiles(pidFiles), parentPid, false));
+                    getChildrenOrDescendants(getParentPidsFromProcFiles(pidFiles), parentPid, false));
         }
         Set<Integer> descendantPids = new HashSet<>();
         // Put everything in the "descendant" set
@@ -496,53 +506,60 @@ import java.util.*;
         return queryProcessList(descendantPids);
     }
 
-    @Override public List<OSProcess> queryDescendantProcesses(int parentPid) {
+    @Override
+    public List<OSProcess> queryDescendantProcesses(int parentPid) {
         File[] pidFiles = ProcessStat.getPidFiles();
         return queryProcessList(
-            getChildrenOrDescendants(getParentPidsFromProcFiles(pidFiles), parentPid, true));
+                getChildrenOrDescendants(getParentPidsFromProcFiles(pidFiles), parentPid, true));
     }
 
-    @Override public int getProcessId() {
+    @Override
+    public int getProcessId() {
         return LinuxLibc.INSTANCE.getpid();
     }
 
-    @Override public int getProcessCount() {
+    @Override
+    public int getProcessCount() {
         return ProcessStat.getPidFiles().length;
     }
 
-    @Override public int getThreadCount() {
+    @Override
+    public int getThreadCount() {
         try {
             Sysinfo info = new Sysinfo();
             if (0 != LibC.INSTANCE.sysinfo(info)) {
-                LOG.error("Failed to get process thread count. Error code: {}",
-                    Native.getLastError());
+                LOG.error("Failed to get process thread count. Error code: {}" + Native.getLastError());
                 return 0;
             }
             return info.procs;
         } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-            LOG.error("Failed to get procs from sysinfo. {}", e.getMessage());
+            LOG.error("Failed to get procs from sysinfo. {}" + e.getMessage());
         }
         return 0;
     }
 
-    @Override public long getSystemUptime() {
+    @Override
+    public long getSystemUptime() {
         return (long) UpTime.getSystemUptimeSeconds();
     }
 
-    @Override public long getSystemBootTime() {
+    @Override
+    public long getSystemBootTime() {
         return BOOTTIME;
     }
 
-    @Override public NetworkParams getNetworkParams() {
+    @Override
+    public NetworkParams getNetworkParams() {
         return new LinuxNetworkParams();
     }
 
-    @Override public List<OSService> getServices() {
+    @Override
+    public List<OSService> getServices() {
         // Get running services
         List<OSService> services = new ArrayList<>();
         Set<String> running = new HashSet<>();
         for (OSProcess p : getChildProcesses(1, OperatingSystem.ProcessFiltering.ALL_PROCESSES,
-            OperatingSystem.ProcessSorting.PID_ASC, 0)) {
+                OperatingSystem.ProcessSorting.PID_ASC, 0)) {
             OSService s = new OSService(p.getName(), p.getProcessID(), OSService.State.RUNNING);
             services.add(s);
             running.add(p.getName());
@@ -556,7 +573,7 @@ import java.util.*;
                 String name = split[0].substring(0, split[0].length() - 8);
                 int index = name.lastIndexOf('.');
                 String shortName =
-                    (index < 0 || index > name.length() - 2) ? name : name.substring(index + 1);
+                        (index < 0 || index > name.length() - 2) ? name : name.substring(index + 1);
                 if (!running.contains(name) && !running.contains(shortName)) {
                     OSService s = new OSService(name, 0, OSService.State.STOPPED);
                     services.add(s);
@@ -573,7 +590,7 @@ import java.util.*;
                     String name = f.getName().substring(0, f.getName().length() - 5);
                     int index = name.lastIndexOf('.');
                     String shortName =
-                        (index < 0 || index > name.length() - 2) ? name : name.substring(index + 1);
+                            (index < 0 || index > name.length() - 2) ? name : name.substring(index + 1);
                     if (!running.contains(name) && !running.contains(shortName)) {
                         OSService s = new OSService(name, 0, OSService.State.STOPPED);
                         services.add(s);

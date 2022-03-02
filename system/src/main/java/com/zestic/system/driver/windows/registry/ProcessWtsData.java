@@ -31,10 +31,10 @@ import com.sun.jna.platform.win32.Wtsapi32;
 import com.sun.jna.platform.win32.Wtsapi32.WTS_PROCESS_INFO_EX;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.Immutable;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.windows.wmi.Win32Process;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.platform.windows.WmiUtil;
 
 import java.util.Collection;
@@ -47,7 +47,7 @@ import java.util.Map;
  */
 @ThreadSafe public final class ProcessWtsData {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final boolean IS_WINDOWS7_OR_GREATER = VersionHelpers.IsWindows7OrGreater();
 
@@ -79,7 +79,7 @@ import java.util.Map;
         if (!Wtsapi32.INSTANCE.WTSEnumerateProcessesEx(Wtsapi32.WTS_CURRENT_SERVER_HANDLE,
             new IntByReference(Wtsapi32.WTS_PROCESS_INFO_LEVEL_1), Wtsapi32.WTS_ANY_SESSION,
             ppProcessInfo, pCount)) {
-            LOG.error("Failed to enumerate Processes. Error code: {}",
+            LOG.error("Failed to enumerate Processes. Error code: {}" +
                 Kernel32.INSTANCE.GetLastError());
             return wtsMap;
         }
@@ -100,7 +100,7 @@ import java.util.Map;
         // Clean up memory
         if (!Wtsapi32.INSTANCE.WTSFreeMemoryEx(Wtsapi32.WTS_PROCESS_INFO_LEVEL_1, pProcessInfo,
             pCount.getValue())) {
-            LOG.warn("Failed to Free Memory for Processes. Error code: {}",
+            LOG.warn("Failed to Free Memory for Processes. Error code: {}" +
                 Kernel32.INSTANCE.GetLastError());
         }
         return wtsMap;

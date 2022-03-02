@@ -30,7 +30,6 @@ import com.sun.jna.platform.win32.COM.WbemcliUtil;
 import com.sun.jna.platform.win32.Ole32;
 import com.sun.jna.platform.win32.WinError;
 import com.sun.jna.platform.win32.WinNT;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.util.GlobalConfig;
 
@@ -43,9 +42,10 @@ import java.util.concurrent.TimeoutException;
  * Utility to handle WMI Queries. Designed to be extended with user-customized
  * behavior.
  */
-@ThreadSafe public class WmiQueryHandler {
+@ThreadSafe
+public class WmiQueryHandler {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
     private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     private static int globalTimeout = GlobalConfig.get("com.zestic.system.util.wmi.timeout", -1);
@@ -82,9 +82,9 @@ import java.util.concurrent.TimeoutException;
         try {
             return customClass.getConstructor(EMPTY_CLASS_ARRAY).newInstance(EMPTY_OBJECT_ARRAY);
         } catch (NoSuchMethodException | SecurityException e) {
-            LOG.error("Failed to find or access a no-arg constructor for {}", customClass);
+            logger.error("Failed to find or access a no-arg constructor for {}" + customClass);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            LOG.error("Failed to create a new instance of {}", customClass);
+            logger.error("Failed to create a new instance of {}" + customClass);
         }
         return null;
     }
@@ -96,7 +96,7 @@ import java.util.concurrent.TimeoutException;
      * @param instanceClass The class to instantiate with {@link #createInstance()}.
      */
     public static synchronized void setInstanceClass(
-        Class<? extends WmiQueryHandler> instanceClass) {
+            Class<? extends WmiQueryHandler> instanceClass) {
         customClass = instanceClass;
     }
 
@@ -128,9 +128,9 @@ import java.util.concurrent.TimeoutException;
      * @return a WmiResult object containing the query results, wrapping an EnumMap
      */
     public <T extends Enum<T>> WbemcliUtil.WmiResult<T> queryWMI(WbemcliUtil.WmiQuery<T> query,
-        boolean initCom) {
+                                                                 boolean initCom) {
         WbemcliUtil.WmiResult<T> result =
-            WbemcliUtil.INSTANCE.new WmiResult(query.getPropertyEnum());
+                WbemcliUtil.INSTANCE.new WmiResult(query.getPropertyEnum());
         if (failedWmiClassNames.contains(query.getWmiClassName())) {
             return result;
         }
@@ -146,13 +146,13 @@ import java.util.concurrent.TimeoutException;
                 final int hresult = e.getHresult() == null ? -1 : e.getHresult().intValue();
                 switch (hresult) {
                     case Wbemcli.WBEM_E_INVALID_NAMESPACE:
-                        LOG.warn("COM exception: Invalid Namespace {}", query.getNameSpace());
+                        logger.warn("COM exception: Invalid Namespace {}" + query.getNameSpace());
                         break;
                     case Wbemcli.WBEM_E_INVALID_CLASS:
-                        LOG.warn("COM exception: Invalid Class {}", query.getWmiClassName());
+                        logger.warn("COM exception: Invalid Class {}" + query.getWmiClassName());
                         break;
                     case Wbemcli.WBEM_E_INVALID_QUERY:
-                        LOG.warn("COM exception: Invalid Query: {}", WmiUtil.queryToString(query));
+                        logger.warn("COM exception: Invalid Query: {}" + WmiUtil.queryToString(query));
                         break;
                     default:
                         handleComException(query, e);
@@ -161,8 +161,7 @@ import java.util.concurrent.TimeoutException;
                 failedWmiClassNames.add(query.getWmiClassName());
             }
         } catch (TimeoutException e) {
-            LOG.warn("WMI query timed out after {} ms: {}", wmiTimeout,
-                WmiUtil.queryToString(query));
+            logger.warn("WMI query timed out after {} ms: {}" + wmiTimeout + WmiUtil.queryToString(query));
         }
         if (comInit) {
             unInitCOM();
@@ -178,9 +177,8 @@ import java.util.concurrent.TimeoutException;
      * @param ex    a {@link com.sun.jna.platform.win32.COM.COMException} object.
      */
     protected void handleComException(WbemcliUtil.WmiQuery<?> query, COMException ex) {
-        LOG.warn(
-            "COM exception querying {}, which might not be on your system. Will not attempt to query it again. Error was {}: {}",
-            query.getWmiClassName(), ex.getHresult().intValue(), ex.getMessage());
+        logger.warn("COM exception querying {}, which might not b  on your system. Will not attempt to query it again. Error was {}: {}" +
+                query.getWmiClassName() + " " + ex.getHresult().intValue() + " " + ex.getMessage());
     }
 
     /*
@@ -201,8 +199,8 @@ import java.util.concurrent.TimeoutException;
         // Set general COM security levels --------------------------
         if (comInit && !isSecurityInitialized()) {
             WinNT.HRESULT hres = Ole32.INSTANCE.CoInitializeSecurity(null, -1, null, null,
-                Ole32.RPC_C_AUTHN_LEVEL_DEFAULT, Ole32.RPC_C_IMP_LEVEL_IMPERSONATE, null,
-                Ole32.EOAC_NONE, null);
+                    Ole32.RPC_C_AUTHN_LEVEL_DEFAULT, Ole32.RPC_C_IMP_LEVEL_IMPERSONATE, null,
+                    Ole32.EOAC_NONE, null);
             // If security already initialized we get RPC_E_TOO_LATE
             // This can be safely ignored
             if (COMUtils.FAILED(hres) && hres.intValue() != WinError.RPC_E_TOO_LATE) {

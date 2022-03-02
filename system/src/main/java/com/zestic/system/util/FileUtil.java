@@ -24,8 +24,8 @@
 package com.zestic.system.util;
 
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,9 +41,10 @@ import java.util.stream.Stream;
 /*
  * File reading methods
  */
-@ThreadSafe public final class FileUtil {
+@ThreadSafe
+public final class FileUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final String READING_LOG = "Reading file {}";
     private static final String READ_LOG = "Read {}";
@@ -75,19 +76,19 @@ import java.util.stream.Stream;
     public static List<String> readFile(String filename, boolean reportError) {
         if (new File(filename).canRead()) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug(READING_LOG, filename);
+                LOG.debug(READING_LOG + filename);
             }
             try {
                 return Files.readAllLines(Paths.get(filename), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 if (reportError) {
-                    LOG.error("Error reading file {}. {}", filename, e.getMessage());
+                    LOG.error("Error reading file {" + filename + "}. {" + e.getMessage() + "}");
                 } else {
-                    LOG.debug("Error reading file {}. {}", filename, e.getMessage());
+                    LOG.debug("Error reading file {" + filename + "}. {" + e.getMessage() + "}");
                 }
             }
         } else if (reportError) {
-            LOG.warn("File not found or not readable: {}", filename);
+            LOG.warn("File not found or not readable: {}" + filename);
         }
         return new ArrayList<>();
     }
@@ -114,19 +115,19 @@ import java.util.stream.Stream;
     public static byte[] readAllBytes(String filename, boolean reportError) {
         if (new File(filename).canRead()) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug(READING_LOG, filename);
+                LOG.debug(READING_LOG + filename);
             }
             try {
                 return Files.readAllBytes(Paths.get(filename));
             } catch (IOException e) {
                 if (reportError) {
-                    LOG.error("Error reading file {}. {}", filename, e.getMessage());
+//                    LOG.error("Error reading file {}. {}", filename, e.getMessage());
                 } else {
-                    LOG.debug("Error reading file {}. {}", filename, e.getMessage());
+//                    LOG.debug("Error reading file {}. {}", filename, e.getMessage());
                 }
             }
         } else if (reportError) {
-            LOG.warn("File not found or not readable: {}", filename);
+//            LOG.warn("File not found or not readable: {}", filename);
         }
         return new byte[0];
     }
@@ -140,12 +141,12 @@ import java.util.stream.Stream;
      */
     public static long getLongFromFile(String filename) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(READING_LOG, filename);
+            LOG.debug(READING_LOG + filename);
         }
         List<String> read = FileUtil.readFile(filename, false);
         if (!read.isEmpty()) {
             if (LOG.isTraceEnabled()) {
-                LOG.trace(READ_LOG, read.get(0));
+                LOG.trace(READ_LOG + read.get(0));
             }
             return ParseUtil.parseLongOrDefault(read.get(0), 0L);
         }
@@ -161,12 +162,12 @@ import java.util.stream.Stream;
      */
     public static long getUnsignedLongFromFile(String filename) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(READING_LOG, filename);
+            LOG.debug(READING_LOG + filename);
         }
         List<String> read = FileUtil.readFile(filename, false);
         if (!read.isEmpty()) {
             if (LOG.isTraceEnabled()) {
-                LOG.trace(READ_LOG, read.get(0));
+                LOG.trace(READ_LOG + read.get(0));
             }
             return ParseUtil.parseUnsignedLongOrDefault(read.get(0), 0L);
         }
@@ -182,18 +183,18 @@ import java.util.stream.Stream;
      */
     public static int getIntFromFile(String filename) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(READING_LOG, filename);
+            LOG.debug(READING_LOG + filename);
         }
         try {
             List<String> read = FileUtil.readFile(filename, false);
             if (!read.isEmpty()) {
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace(READ_LOG, read.get(0));
+                    LOG.trace(READ_LOG + read.get(0));
                 }
                 return Integer.parseInt(read.get(0));
             }
         } catch (NumberFormatException ex) {
-            LOG.warn("Unable to read value from {}. {}", filename, ex.getMessage());
+            LOG.warn("Unable to read value from {}. {}" + filename + " " + ex.getMessage());
         }
         return 0;
     }
@@ -207,12 +208,12 @@ import java.util.stream.Stream;
      */
     public static String getStringFromFile(String filename) {
         if (LOG.isDebugEnabled()) {
-            LOG.debug(READING_LOG, filename);
+            LOG.debug(READING_LOG + filename);
         }
         List<String> read = FileUtil.readFile(filename, false);
         if (!read.isEmpty()) {
             if (LOG.isTraceEnabled()) {
-                LOG.trace(READ_LOG, read.get(0));
+                LOG.trace(READ_LOG + read.get(0));
             }
             return read.get(0);
         }
@@ -234,7 +235,7 @@ import java.util.stream.Stream;
     public static Map<String, String> getKeyValueMapFromFile(String filename, String separator) {
         Map<String, String> map = new HashMap<>();
         if (LOG.isDebugEnabled()) {
-            LOG.debug(READING_LOG, filename);
+            LOG.debug(READING_LOG + filename);
         }
         List<String> lines = FileUtil.readFile(filename, false);
         for (String line : lines) {
@@ -259,7 +260,7 @@ import java.util.stream.Stream;
         // ClassLoaders, evaluated in order, eliminating duplicates
         for (ClassLoader loader : Stream.of(Thread.currentThread().getContextClassLoader(),
                 ClassLoader.getSystemClassLoader(), FileUtil.class.getClassLoader())
-            .collect(Collectors.toCollection(LinkedHashSet::new))) {
+                .collect(Collectors.toCollection(LinkedHashSet::new))) {
             if (readPropertiesFromClassLoader(propsFilename, archProps, loader)) {
                 return archProps;
             }
@@ -269,7 +270,7 @@ import java.util.stream.Stream;
     }
 
     private static boolean readPropertiesFromClassLoader(String propsFilename, Properties archProps,
-        ClassLoader loader) {
+                                                         ClassLoader loader) {
         if (loader == null) {
             return false;
         }
@@ -277,12 +278,12 @@ import java.util.stream.Stream;
         try {
             List<URL> resources = Collections.list(loader.getResources(propsFilename));
             if (resources.isEmpty()) {
-                LOG.debug("No {} file found from ClassLoader {}", propsFilename, loader);
+//                LOG.debug("No {} file found from ClassLoader {}", propsFilename, loader);
                 return false;
             }
             if (resources.size() > 1) {
-                LOG.warn("Configuration conflict: there is more than one {} file on the classpath",
-                    propsFilename);
+                LOG.warn("Configuration conflict: there is more than one {} file on the classpath" +
+                        propsFilename);
                 return true;
             }
 

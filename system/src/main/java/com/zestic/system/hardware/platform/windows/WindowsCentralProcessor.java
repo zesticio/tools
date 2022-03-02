@@ -28,7 +28,6 @@ import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.COM.WbemcliUtil.WmiResult;
 import com.sun.jna.platform.win32.PowrProf.POWER_INFORMATION_LEVEL;
 import com.sun.jna.platform.win32.WinBase.SYSTEM_INFO;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.windows.LogicalProcessorInformation;
 import com.zestic.system.driver.windows.perfmon.ProcessorInformation;
@@ -56,7 +55,7 @@ import java.util.Map;
  */
 @ThreadSafe final class WindowsCentralProcessor extends AbstractCentralProcessor {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(WindowsCentralProcessor.class);
 
     // populated by initProcessorCounts called by the parent constructor
     private Map<String, Integer> numaNodeProcToLogicalProcMap;

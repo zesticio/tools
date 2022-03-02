@@ -23,7 +23,6 @@
  */
 package com.zestic.system.software.common;
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.software.os.NetworkParams;
 import com.zestic.system.util.FileUtil;
@@ -38,9 +37,10 @@ import java.util.List;
 /*
  * Common NetworkParams implementation.
  */
-@ThreadSafe public abstract class AbstractNetworkParams implements NetworkParams {
+@ThreadSafe
+public abstract class AbstractNetworkParams implements NetworkParams {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AbstractNetworkParams.class);
     private static final String NAMESERVER = "nameserver";
 
     /*
@@ -64,17 +64,19 @@ import java.util.List;
         return "";
     }
 
-    @Override public String getDomainName() {
+    @Override
+    public String getDomainName() {
         try {
             return InetAddress.getLocalHost().getCanonicalHostName();
         } catch (UnknownHostException e) {
-            LOG.error("Unknown host exception when getting address of local host: {}",
-                e.getMessage());
+            LOG.error("Unknown host exception when getting address of local host: {}" +
+                    e.getMessage());
             return "";
         }
     }
 
-    @Override public String getHostName() {
+    @Override
+    public String getHostName() {
         try {
             String hn = InetAddress.getLocalHost().getHostName();
             int dot = hn.indexOf('.');
@@ -83,13 +85,14 @@ import java.util.List;
             }
             return hn.substring(0, dot);
         } catch (UnknownHostException e) {
-            LOG.error("Unknown host exception when getting address of local host: {}",
-                e.getMessage());
+            LOG.error("Unknown host exception when getting address of local host: {}" +
+                    e.getMessage());
             return "";
         }
     }
 
-    @Override public String[] getDnsServers() {
+    @Override
+    public String[] getDnsServers() {
         List<String> resolv = FileUtil.readFile("/etc/resolv.conf");
         String key = NAMESERVER;
         int maxNameServer = 3;
@@ -107,11 +110,12 @@ import java.util.List;
         return servers.toArray(new String[0]);
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return String.format(
-            "Host name: %s, Domain name: %s, DNS servers: %s, IPv4 Gateway: %s, IPv6 Gateway: %s",
-            this.getHostName(), this.getDomainName(), Arrays.toString(this.getDnsServers()),
-            this.getIpv4DefaultGateway(), this.getIpv6DefaultGateway());
+                "Host name: %s, Domain name: %s, DNS servers: %s, IPv4 Gateway: %s, IPv6 Gateway: %s",
+                this.getHostName(), this.getDomainName(), Arrays.toString(this.getDnsServers()),
+                this.getIpv4DefaultGateway(), this.getIpv6DefaultGateway());
 
     }
 }

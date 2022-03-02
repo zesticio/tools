@@ -32,7 +32,6 @@ import com.sun.jna.platform.win32.COM.WbemcliUtil.WmiResult;
 import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.platform.win32.WinNT.HANDLEByReference;
 import com.sun.jna.ptr.IntByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.windows.registry.ProcessPerformanceData;
 import com.zestic.system.driver.windows.registry.ProcessWtsData;
@@ -40,6 +39,7 @@ import com.zestic.system.driver.windows.registry.ProcessWtsData.WtsInfo;
 import com.zestic.system.driver.windows.registry.ThreadPerformanceData;
 import com.zestic.system.driver.windows.wmi.Win32Process;
 import com.zestic.system.driver.windows.wmi.Win32ProcessCached;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.windows.NtDll;
 import com.zestic.system.jna.platform.windows.NtDll.UNICODE_STRING;
 import com.zestic.system.software.common.AbstractOSProcess;
@@ -61,17 +61,18 @@ import java.util.stream.Collectors;
 /*
  * OSProcess implementation
  */
-@ThreadSafe public class WindowsOSProcess extends AbstractOSProcess {
+@ThreadSafe
+public class WindowsOSProcess extends AbstractOSProcess {
 
     // Config param to enable cache
     public static final String OSHI_OS_WINDOWS_COMMANDLINE_BATCH =
-        "com.zestic.system.os.windows.commandline.batch";
-    private static final Log LOG = Log.get();
+            "com.zestic.system.os.windows.commandline.batch";
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final boolean USE_BATCH_COMMANDLINE =
-        GlobalConfig.get(OSHI_OS_WINDOWS_COMMANDLINE_BATCH, false);
+            GlobalConfig.get(OSHI_OS_WINDOWS_COMMANDLINE_BATCH, false);
 
     private static final boolean USE_PROCSTATE_SUSPENDED =
-        GlobalConfig.get(WindowsOperatingSystem.OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED, false);
+            GlobalConfig.get(WindowsOperatingSystem.OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED, false);
 
     private static final boolean IS_VISTA_OR_GREATER = VersionHelpers.IsWindowsVistaOrGreater();
     private static final boolean IS_WINDOWS7_OR_GREATER = VersionHelpers.IsWindows7OrGreater();
@@ -80,7 +81,7 @@ import java.util.stream.Collectors;
     private final WindowsOperatingSystem os;
     private Supplier<Pair<String, String>> groupInfo = Memoizer.memoize(this::queryGroupInfo);
     private Supplier<Triplet<String, String, Map<String, String>>> cwdCmdEnv =
-        Memoizer.memoize(this::queryCwdCommandlineEnvironment);
+            Memoizer.memoize(this::queryCwdCommandlineEnvironment);
     private Supplier<String> currentWorkingDirectory = Memoizer.memoize(this::queryCwd);
     private String name;
     private Supplier<Pair<String, String>> userInfo = Memoizer.memoize(this::queryUserInfo);
@@ -104,9 +105,9 @@ import java.util.stream.Collectors;
     private long pageFaults;
 
     public WindowsOSProcess(int pid, WindowsOperatingSystem os,
-        Map<Integer, ProcessPerformanceData.PerfCounterBlock> processMap,
-        Map<Integer, WtsInfo> processWtsMap,
-        Map<Integer, ThreadPerformanceData.PerfCounterBlock> threadMap) {
+                            Map<Integer, ProcessPerformanceData.PerfCounterBlock> processMap,
+                            Map<Integer, WtsInfo> processWtsMap,
+                            Map<Integer, ThreadPerformanceData.PerfCounterBlock> threadMap) {
         super(pid);
         // Save a copy of OS creating this object for later use
         this.os = os;
@@ -133,111 +134,136 @@ import java.util.stream.Collectors;
         return "";
     }
 
-    @Override public String getName() {
+    @Override
+    public String getName() {
         return this.name;
     }
 
-    @Override public String getPath() {
+    @Override
+    public String getPath() {
         return this.path;
     }
 
-    @Override public String getCommandLine() {
+    @Override
+    public String getCommandLine() {
         return this.commandLine.get();
     }
 
-    @Override public List<String> getArguments() {
+    @Override
+    public List<String> getArguments() {
         return args.get();
     }
 
-    @Override public Map<String, String> getEnvironmentVariables() {
+    @Override
+    public Map<String, String> getEnvironmentVariables() {
         return cwdCmdEnv.get().getC();
     }
 
-    @Override public String getCurrentWorkingDirectory() {
+    @Override
+    public String getCurrentWorkingDirectory() {
         return currentWorkingDirectory.get();
     }
 
-    @Override public String getUser() {
+    @Override
+    public String getUser() {
         return userInfo.get().getA();
     }
 
-    @Override public String getUserID() {
+    @Override
+    public String getUserID() {
         return userInfo.get().getB();
     }
 
-    @Override public String getGroup() {
+    @Override
+    public String getGroup() {
         return groupInfo.get().getA();
     }
 
-    @Override public String getGroupID() {
+    @Override
+    public String getGroupID() {
         return groupInfo.get().getB();
     }
 
-    @Override public OSProcess.State getState() {
+    @Override
+    public OSProcess.State getState() {
         return this.state;
     }
 
-    @Override public int getParentProcessID() {
+    @Override
+    public int getParentProcessID() {
         return this.parentProcessID;
     }
 
-    @Override public int getThreadCount() {
+    @Override
+    public int getThreadCount() {
         return this.threadCount;
     }
 
-    @Override public int getPriority() {
+    @Override
+    public int getPriority() {
         return this.priority;
     }
 
-    @Override public long getVirtualSize() {
+    @Override
+    public long getVirtualSize() {
         return this.virtualSize;
     }
 
-    @Override public long getResidentSetSize() {
+    @Override
+    public long getResidentSetSize() {
         return this.residentSetSize;
     }
 
-    @Override public long getKernelTime() {
+    @Override
+    public long getKernelTime() {
         return this.kernelTime;
     }
 
-    @Override public long getUserTime() {
+    @Override
+    public long getUserTime() {
         return this.userTime;
     }
 
-    @Override public long getUpTime() {
+    @Override
+    public long getUpTime() {
         return this.upTime;
     }
 
-    @Override public long getStartTime() {
+    @Override
+    public long getStartTime() {
         return this.startTime;
     }
 
-    @Override public long getBytesRead() {
+    @Override
+    public long getBytesRead() {
         return this.bytesRead;
     }
 
-    @Override public long getBytesWritten() {
+    @Override
+    public long getBytesWritten() {
         return this.bytesWritten;
     }
 
-    @Override public long getOpenFiles() {
+    @Override
+    public long getOpenFiles() {
         return this.openFiles;
     }
 
-    @Override public int getBitness() {
+    @Override
+    public int getBitness() {
         return this.bitness;
     }
 
-    @Override public long getAffinityMask() {
+    @Override
+    public long getAffinityMask() {
         final HANDLE pHandle =
-            Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
+                Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
         if (pHandle != null) {
             try {
                 ULONG_PTRByReference processAffinity = new ULONG_PTRByReference();
                 ULONG_PTRByReference systemAffinity = new ULONG_PTRByReference();
                 if (Kernel32.INSTANCE.GetProcessAffinityMask(pHandle, processAffinity,
-                    systemAffinity)) {
+                        systemAffinity)) {
                     return Pointer.nativeValue(processAffinity.getValue().toPointer());
                 }
             } finally {
@@ -248,32 +274,35 @@ import java.util.stream.Collectors;
         return 0L;
     }
 
-    @Override public long getMinorFaults() {
+    @Override
+    public long getMinorFaults() {
         return this.pageFaults;
     }
 
-    @Override public List<OSThread> getThreadDetails() {
+    @Override
+    public List<OSThread> getThreadDetails() {
         // Get data from the registry if possible
         Map<Integer, ThreadPerformanceData.PerfCounterBlock> threads =
-            ThreadPerformanceData.buildThreadMapFromRegistry(Collections.singleton(getProcessID()));
+                ThreadPerformanceData.buildThreadMapFromRegistry(Collections.singleton(getProcessID()));
         // otherwise performance counters with WMI backup
         if (threads != null) {
             threads = ThreadPerformanceData.buildThreadMapFromPerfCounters(
-                Collections.singleton(this.getProcessID()));
+                    Collections.singleton(this.getProcessID()));
         }
         if (threads == null) {
             return Collections.emptyList();
         }
         return threads.entrySet().stream().map(
-            entry -> new WindowsOSThread(getProcessID(), entry.getKey(), this.name,
-                entry.getValue())).collect(Collectors.toList());
+                entry -> new WindowsOSThread(getProcessID(), entry.getKey(), this.name,
+                        entry.getValue())).collect(Collectors.toList());
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         Set<Integer> pids = Collections.singleton(this.getProcessID());
         // Get data from the registry if possible
         Map<Integer, ProcessPerformanceData.PerfCounterBlock> pcb =
-            ProcessPerformanceData.buildProcessMapFromRegistry(null);
+                ProcessPerformanceData.buildProcessMapFromRegistry(null);
         // otherwise performance counters with WMI backup
         if (pcb == null) {
             pcb = ProcessPerformanceData.buildProcessMapFromPerfCounters(pids);
@@ -291,7 +320,7 @@ import java.util.stream.Collectors;
     }
 
     private boolean updateAttributes(ProcessPerformanceData.PerfCounterBlock pcb, WtsInfo wts,
-        Map<Integer, ThreadPerformanceData.PerfCounterBlock> threadMap) {
+                                     Map<Integer, ThreadPerformanceData.PerfCounterBlock> threadMap) {
         this.name = pcb.getName();
         this.path = wts.getPath(); // Empty string for Win7+
         this.parentProcessID = pcb.getParentProcessID();
@@ -331,7 +360,7 @@ import java.util.stream.Collectors;
         // Get a handle to the process for various extended info. Only gets
         // current user unless running as administrator
         final HANDLE pHandle =
-            Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
+                Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
         if (pHandle != null) {
             try {
                 // Test for 32-bit process on 64-bit windows
@@ -374,10 +403,10 @@ import java.util.stream.Collectors;
         }
         // If no cache enabled, query line by line
         WmiResult<Win32Process.CommandLineProperty> commandLineProcs =
-            Win32Process.queryCommandLines(Collections.singleton(getProcessID()));
+                Win32Process.queryCommandLines(Collections.singleton(getProcessID()));
         if (commandLineProcs.getResultCount() > 0) {
             return WmiUtil.getString(commandLineProcs, Win32Process.CommandLineProperty.COMMANDLINE,
-                0);
+                    0);
         }
         return "";
     }
@@ -409,25 +438,23 @@ import java.util.stream.Collectors;
     private Pair<String, String> queryUserInfo() {
         Pair<String, String> pair = null;
         final HANDLE pHandle =
-            Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
+                Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
         if (pHandle != null) {
             final HANDLEByReference phToken = new HANDLEByReference();
             try {
                 if (Advapi32.INSTANCE.OpenProcessToken(pHandle,
-                    WinNT.TOKEN_DUPLICATE | WinNT.TOKEN_QUERY, phToken)) {
+                        WinNT.TOKEN_DUPLICATE | WinNT.TOKEN_QUERY, phToken)) {
                     Account account = Advapi32Util.getTokenAccount(phToken.getValue());
                     pair = new Pair<>(account.name, account.sidString);
                 } else {
                     int error = Kernel32.INSTANCE.GetLastError();
                     // Access denied errors are common. Fail silently.
                     if (error != WinError.ERROR_ACCESS_DENIED) {
-                        LOG.error("Failed to get process token for process {}: {}", getProcessID(),
-                            Kernel32.INSTANCE.GetLastError());
+                        LOG.error("Failed to get process token for process {" + getProcessID() + "}: {" + Kernel32.INSTANCE.GetLastError() + "}");
                     }
                 }
             } catch (Win32Exception e) {
-                LOG.warn("Failed to query user info for process {} ({}): {}", getProcessID(),
-                    getName(), e.getMessage());
+                LOG.warn("Failed to query user info for process {" + getProcessID() + "} ({" + getName() + "}): {" + e.getMessage() + "}");
             } finally {
                 final HANDLE token = phToken.getValue();
                 if (token != null) {
@@ -445,19 +472,18 @@ import java.util.stream.Collectors;
     private Pair<String, String> queryGroupInfo() {
         Pair<String, String> pair = null;
         final HANDLE pHandle =
-            Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
+                Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION, false, getProcessID());
         if (pHandle != null) {
             final HANDLEByReference phToken = new HANDLEByReference();
             if (Advapi32.INSTANCE.OpenProcessToken(pHandle,
-                WinNT.TOKEN_DUPLICATE | WinNT.TOKEN_QUERY, phToken)) {
+                    WinNT.TOKEN_DUPLICATE | WinNT.TOKEN_QUERY, phToken)) {
                 Account account = Advapi32Util.getTokenPrimaryGroup(phToken.getValue());
                 pair = new Pair<>(account.name, account.sidString);
             } else {
                 int error = Kernel32.INSTANCE.GetLastError();
                 // Access denied errors are common. Fail silently.
                 if (error != WinError.ERROR_ACCESS_DENIED) {
-                    LOG.error("Failed to get process token for process {}: {}", getProcessID(),
-                        Kernel32.INSTANCE.GetLastError());
+                    LOG.error("Failed to get process token for process {" + getProcessID() + "}: {" + Kernel32.INSTANCE.GetLastError() + "}");
                 }
             }
             final HANDLE token = phToken.getValue();
@@ -475,8 +501,8 @@ import java.util.stream.Collectors;
     private Triplet<String, String, Map<String, String>> queryCwdCommandlineEnvironment() {
         // Get the process handle
         HANDLE h =
-            Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION | WinNT.PROCESS_VM_READ,
-                false, getProcessID());
+                Kernel32.INSTANCE.OpenProcess(WinNT.PROCESS_QUERY_INFORMATION | WinNT.PROCESS_VM_READ,
+                        false, getProcessID());
         if (h != null) {
             try {
                 // Can't check 32-bit procs from a 64-bit one
@@ -487,8 +513,8 @@ import java.util.stream.Collectors;
                     // Start by getting the address of the PEB
                     NtDll.PROCESS_BASIC_INFORMATION pbi = new NtDll.PROCESS_BASIC_INFORMATION();
                     int ret =
-                        NtDll.INSTANCE.NtQueryInformationProcess(h, NtDll.PROCESS_BASIC_INFORMATION,
-                            pbi.getPointer(), pbi.size(), nRead);
+                            NtDll.INSTANCE.NtQueryInformationProcess(h, NtDll.PROCESS_BASIC_INFORMATION,
+                                    pbi.getPointer(), pbi.size(), nRead);
                     if (ret != 0) {
                         return defaultCwdCommandlineEnvironment();
                     }
@@ -497,7 +523,7 @@ import java.util.stream.Collectors;
                     // Now fetch the PEB
                     NtDll.PEB peb = new NtDll.PEB();
                     Kernel32.INSTANCE.ReadProcessMemory(h, pbi.PebBaseAddress, peb.getPointer(),
-                        peb.size(), nRead);
+                            peb.size(), nRead);
                     if (nRead.getValue() == 0) {
                         return defaultCwdCommandlineEnvironment();
                     }
@@ -506,7 +532,7 @@ import java.util.stream.Collectors;
                     // Now fetch the Process Parameters structure containing our data
                     NtDll.RTL_USER_PROCESS_PARAMETERS upp = new NtDll.RTL_USER_PROCESS_PARAMETERS();
                     Kernel32.INSTANCE.ReadProcessMemory(h, peb.ProcessParameters, upp.getPointer(),
-                        upp.size(), nRead);
+                            upp.size(), nRead);
                     if (nRead.getValue() == 0) {
                         return defaultCwdCommandlineEnvironment();
                     }
@@ -521,7 +547,7 @@ import java.util.stream.Collectors;
                     if (envSize > 0) {
                         Memory buffer = new Memory(envSize);
                         Kernel32.INSTANCE.ReadProcessMemory(h, upp.Environment, buffer, envSize,
-                            nRead);
+                                nRead);
                         if (nRead.getValue() > 0) {
                             char[] env = buffer.getCharArray(0, envSize / 2);
                             Map<String, String> envMap = ParseUtil.parseCharArrayToStringMap(env);

@@ -26,10 +26,10 @@ package com.zestic.system.hardware.platform.windows;
 import com.sun.jna.platform.win32.COM.COMException;
 import com.sun.jna.platform.win32.COM.WbemcliUtil.WmiResult;
 import com.sun.jna.platform.win32.VersionHelpers;
-import com.zestic.log.Log;
 import com.zestic.system.driver.windows.wmi.MSFTStorage;
 import com.zestic.system.hardware.LogicalVolumeGroup;
 import com.zestic.system.hardware.common.AbstractLogicalVolumeGroup;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.ParseUtil;
 import com.zestic.system.util.platform.windows.WmiQueryHandler;
 import com.zestic.system.util.platform.windows.WmiUtil;
@@ -42,12 +42,12 @@ import java.util.regex.Pattern;
 
 final class WindowsLogicalVolumeGroup extends AbstractLogicalVolumeGroup {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final Pattern SP_OBJECT_ID = Pattern.compile(".*ObjectId=.*SP:(\\{.*\\}).*");
     private static final Pattern PD_OBJECT_ID = Pattern.compile(".*ObjectId=.*PD:(\\{.*\\}).*");
     private static final Pattern VD_OBJECT_ID =
-        Pattern.compile(".*ObjectId=.*VD:(\\{.*\\})(\\{.*\\}).*");
+            Pattern.compile(".*ObjectId=.*VD:(\\{.*\\})(\\{.*\\}).*");
 
     private static final boolean IS_WINDOWS8_OR_GREATER = VersionHelpers.IsWindows8OrGreater();
 
@@ -78,14 +78,14 @@ final class WindowsLogicalVolumeGroup extends AbstractLogicalVolumeGroup {
             count = vds.getResultCount();
             for (int i = 0; i < count; i++) {
                 String vdObjectId =
-                    WmiUtil.getString(vds, MSFTStorage.VirtualDiskProperty.OBJECTID, i);
+                        WmiUtil.getString(vds, MSFTStorage.VirtualDiskProperty.OBJECTID, i);
                 Matcher m = VD_OBJECT_ID.matcher(vdObjectId);
                 if (m.matches()) {
                     vdObjectId = m.group(2) + " " + m.group(1);
                 }
                 // Store key with SP|VD
                 vdMap.put(vdObjectId,
-                    WmiUtil.getString(vds, MSFTStorage.VirtualDiskProperty.FRIENDLYNAME, i));
+                        WmiUtil.getString(vds, MSFTStorage.VirtualDiskProperty.FRIENDLYNAME, i));
             }
 
             // Get all the Physical Disks
@@ -94,32 +94,32 @@ final class WindowsLogicalVolumeGroup extends AbstractLogicalVolumeGroup {
             count = pds.getResultCount();
             for (int i = 0; i < count; i++) {
                 String pdObjectId =
-                    WmiUtil.getString(pds, MSFTStorage.PhysicalDiskProperty.OBJECTID, i);
+                        WmiUtil.getString(pds, MSFTStorage.PhysicalDiskProperty.OBJECTID, i);
                 Matcher m = PD_OBJECT_ID.matcher(pdObjectId);
                 if (m.matches()) {
                     pdObjectId = m.group(1);
                 }
                 // Store key with PD
                 pdMap.put(pdObjectId, new Pair<>(
-                    WmiUtil.getString(pds, MSFTStorage.PhysicalDiskProperty.FRIENDLYNAME, i),
-                    WmiUtil.getString(pds, MSFTStorage.PhysicalDiskProperty.PHYSICALLOCATION, i)));
+                        WmiUtil.getString(pds, MSFTStorage.PhysicalDiskProperty.FRIENDLYNAME, i),
+                        WmiUtil.getString(pds, MSFTStorage.PhysicalDiskProperty.PHYSICALLOCATION, i)));
             }
 
             // Get the Storage Pool to Physical Disk mappping
             Map<String, String> sppdMap = new HashMap<>();
             WmiResult<MSFTStorage.StoragePoolToPhysicalDiskProperty> sppd =
-                MSFTStorage.queryStoragePoolPhysicalDisks(h);
+                    MSFTStorage.queryStoragePoolPhysicalDisks(h);
             count = sppd.getResultCount();
             for (int i = 0; i < count; i++) {
                 // Ref string contains object id, will do partial match later
                 String spObjectId = WmiUtil.getRefString(sppd,
-                    MSFTStorage.StoragePoolToPhysicalDiskProperty.STORAGEPOOL, i);
+                        MSFTStorage.StoragePoolToPhysicalDiskProperty.STORAGEPOOL, i);
                 Matcher m = SP_OBJECT_ID.matcher(spObjectId);
                 if (m.matches()) {
                     spObjectId = m.group(1);
                 }
                 String pdObjectId = WmiUtil.getRefString(sppd,
-                    MSFTStorage.StoragePoolToPhysicalDiskProperty.PHYSICALDISK, i);
+                        MSFTStorage.StoragePoolToPhysicalDiskProperty.PHYSICALDISK, i);
                 m = PD_OBJECT_ID.matcher(pdObjectId);
                 if (m.matches()) {
                     pdObjectId = m.group(1);
@@ -133,10 +133,10 @@ final class WindowsLogicalVolumeGroup extends AbstractLogicalVolumeGroup {
             for (int i = 0; i < count; i++) {
                 // Name
                 String name =
-                    WmiUtil.getString(sp, MSFTStorage.StoragePoolProperty.FRIENDLYNAME, i);
+                        WmiUtil.getString(sp, MSFTStorage.StoragePoolProperty.FRIENDLYNAME, i);
                 // Parse object ID to match
                 String spObjectId =
-                    WmiUtil.getString(sp, MSFTStorage.StoragePoolProperty.OBJECTID, i);
+                        WmiUtil.getString(sp, MSFTStorage.StoragePoolProperty.OBJECTID, i);
                 Matcher m = SP_OBJECT_ID.matcher(spObjectId);
                 if (m.matches()) {
                     spObjectId = m.group(1);
@@ -158,17 +158,17 @@ final class WindowsLogicalVolumeGroup extends AbstractLogicalVolumeGroup {
                     if (entry.getKey().contains(spObjectId)) {
                         String vdObjectId = ParseUtil.whitespaces.split(entry.getKey())[0];
                         logicalVolumeMap.put(entry.getValue() + " " + vdObjectId,
-                            physicalVolumeSet);
+                                physicalVolumeSet);
                     }
                 }
                 // Add to list
                 lvgList.add(
-                    new WindowsLogicalVolumeGroup(name, logicalVolumeMap, physicalVolumeSet));
+                        new WindowsLogicalVolumeGroup(name, logicalVolumeMap, physicalVolumeSet));
             }
 
             return lvgList;
         } catch (COMException e) {
-            LOG.warn("COM exception: {}", e.getMessage());
+            LOG.warn("COM exception: {}" + e.getMessage());
             return Collections.emptyList();
         } finally {
             if (comInit) {

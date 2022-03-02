@@ -16,7 +16,6 @@ import com.zestic.core.map.MapUtil;
 import com.zestic.core.util.CharsetUtil;
 import com.zestic.core.util.ReflectUtil;
 import com.zestic.core.util.StrUtil;
-import com.zestic.log.StaticLog;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -581,7 +580,7 @@ public final class Props extends Properties implements BasicTypeGetter<String>, 
 				BeanUtil.setProperty(bean, StrUtil.subSuf(key, prefix.length()), entry.getValue());
 			} catch (Exception e) {
 				// 忽略注入失败的字段（这些字段可能用于其它配置）
-				StaticLog.debug("Ignore property: [{}]", key);
+//				StaticLog.debug("Ignore property: [{}]", key);
 			}
 		}
 

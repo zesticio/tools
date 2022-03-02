@@ -28,8 +28,8 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
 import com.sun.jna.platform.unix.LibCAPI.ssize_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.unix.solaris.SolarisLibc;
 import com.zestic.system.util.ExecutingCommand;
 import com.zestic.system.util.ParseUtil;
@@ -48,16 +48,17 @@ import java.util.*;
 /*
  * Utility to query /proc/psinfo
  */
-@ThreadSafe public final class PsInfo {
-    private static final Log LOG = Log.get();
+@ThreadSafe
+public final class PsInfo {
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final boolean IS_LITTLE_ENDIAN =
-        "little".equals(System.getProperty("sun.cpu.endian"));
+            "little".equals(System.getProperty("sun.cpu.endian"));
 
     private static final SolarisLibc LIBC = SolarisLibc.INSTANCE;
 
     private static final long PAGE_SIZE =
-        ParseUtil.parseLongOrDefault(ExecutingCommand.getFirstAnswer("pagesize"), 4096L);
+            ParseUtil.parseLongOrDefault(ExecutingCommand.getFirstAnswer("pagesize"), 4096L);
     private static Map<LwpsInfoT, Integer> lwpsInfoOffsets = initLwpsOffsets();
     private static Map<PsInfoT, Integer> psInfoOffsets = initPsOffsets();
 
@@ -96,8 +97,8 @@ import java.util.*;
     public static Quartet<Integer, Long, Long, Byte> queryArgsEnvAddrs(int pid) {
         File procpsinfo = new File("/proc/" + pid + "/psinfo");
         try (RandomAccessFile psinfo = new RandomAccessFile(procpsinfo, "r");
-            FileChannel chan = psinfo.getChannel();
-            ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+             FileChannel chan = psinfo.getChannel();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             int bufferSize = psInfoOffsets.get(PsInfoT.SIZE);
             if (bufferSize > chan.size()) {
                 bufferSize = (int) chan.size();
@@ -114,26 +115,25 @@ import java.util.*;
                 // Must have at least one argc (the command itself) so failure here means exit
                 if (argc > 0) {
                     long argv = Native.POINTER_SIZE == 8 ?
-                        buf.getLong(psInfoOffsets.get(PsInfoT.PR_ARGV)) :
-                        buf.getInt(psInfoOffsets.get(PsInfoT.PR_ARGV));
+                            buf.getLong(psInfoOffsets.get(PsInfoT.PR_ARGV)) :
+                            buf.getInt(psInfoOffsets.get(PsInfoT.PR_ARGV));
                     long envp = Native.POINTER_SIZE == 8 ?
-                        buf.getLong(psInfoOffsets.get(PsInfoT.PR_ENVP)) :
-                        buf.getInt(psInfoOffsets.get(PsInfoT.PR_ENVP));
+                            buf.getLong(psInfoOffsets.get(PsInfoT.PR_ENVP)) :
+                            buf.getInt(psInfoOffsets.get(PsInfoT.PR_ENVP));
                     // Process data model 1 = 32 bit, 2 = 64 bit
                     byte dmodel = buf.get(psInfoOffsets.get(PsInfoT.PR_DMODEL));
                     // Sanity check
                     if (dmodel * 4 != (envp - argv) / (argc + 1)) {
                         LOG.trace(
-                            "Failed data model and offset increment sanity check: dm={} diff={}",
-                            dmodel, envp - argv);
+                                "Failed data model and offset increment sanity check: dm={" + dmodel + "} diff={" + (envp - argv) + "}");
                         return null;
                     }
                     return new Quartet<>(argc, argv, envp, dmodel);
                 }
-                LOG.trace("No permission to read file: {} ", procpsinfo);
+                LOG.trace("No permission to read file: {} " + procpsinfo);
             }
         } catch (IOException e) {
-            LOG.debug("Failed to read file: {} ", procpsinfo);
+            LOG.debug("Failed to read file: {} " + procpsinfo);
         }
         return null;
     }
@@ -156,7 +156,7 @@ import java.util.*;
             String procas = "/proc/" + pid + "/as";
             int fd = LIBC.open(procas, 0);
             if (fd < 0) {
-                LOG.trace("No permission to read file: {} ", procas);
+                LOG.trace("No permission to read file: {} " + procas);
                 return new Pair<>(args, env);
             }
             try {
@@ -177,10 +177,10 @@ import java.util.*;
                 long offset = argv;
                 for (int i = 0; i < argc; i++) {
                     bufStart = conditionallyReadBufferFromStartOfPage(fd, buffer, bufSize, bufStart,
-                        offset);
+                            offset);
                     argp[i] = bufStart == 0 ?
-                        0 :
-                        getOffsetFromBuffer(buffer, offset - bufStart, increment);
+                            0 :
+                            getOffsetFromBuffer(buffer, offset - bufStart, increment);
                     offset += increment;
                 }
 
@@ -192,10 +192,10 @@ import java.util.*;
                 int limit = 500; // sane max env strings to stop at
                 do {
                     bufStart = conditionallyReadBufferFromStartOfPage(fd, buffer, bufSize, bufStart,
-                        offset);
+                            offset);
                     addr = bufStart == 0 ?
-                        0 :
-                        getOffsetFromBuffer(buffer, offset - bufStart, increment);
+                            0 :
+                            getOffsetFromBuffer(buffer, offset - bufStart, increment);
                     if (addr != 0) {
                         envPtrList.add(addr);
                     }
@@ -205,7 +205,7 @@ import java.util.*;
                 // Now read the arg strings from the buffer
                 for (int i = 0; i < argp.length && argp[i] != 0; i++) {
                     bufStart = conditionallyReadBufferFromStartOfPage(fd, buffer, bufSize, bufStart,
-                        argp[i]);
+                            argp[i]);
                     if (bufStart != 0) {
                         String argStr = buffer.getString(argp[i] - bufStart);
                         if (!argStr.isEmpty()) {
@@ -217,7 +217,7 @@ import java.util.*;
                 // And now read the env strings from the buffer
                 for (Long envPtr : envPtrList) {
                     bufStart = conditionallyReadBufferFromStartOfPage(fd, buffer, bufSize, bufStart,
-                        envPtr);
+                            envPtr);
                     if (bufStart != 0) {
                         String envStr = buffer.getString(envPtr - bufStart);
                         int idx = envStr.indexOf('=');
@@ -246,15 +246,14 @@ import java.util.*;
      * @return The new starting pointer for the buffer
      */
     private static long conditionallyReadBufferFromStartOfPage(int fd, Memory buffer,
-        size_t bufSize, long bufStart, long addr) {
+                                                               size_t bufSize, long bufStart, long addr) {
         // If we don't have the right buffer, update it
         if (addr < bufStart || addr - bufStart > PAGE_SIZE) {
             long newStart = Math.floorDiv(addr, PAGE_SIZE) * PAGE_SIZE;
             ssize_t result = LIBC.pread(fd, buffer, bufSize, new NativeLong(newStart));
             // May return less than asked but should be at least a full page
             if (result.longValue() < PAGE_SIZE) {
-                LOG.debug("Failed to read page from address space: {} bytes read",
-                    result.longValue());
+                LOG.debug("Failed to read page from address space: {} bytes read" + result.longValue());
                 return 0;
             }
             return newStart;

@@ -28,17 +28,18 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
 
 
 /*
  * Provides access to sysctl calls on FreeBSD
  */
-@ThreadSafe public final class BsdSysctlUtil {
+@ThreadSafe
+public final class BsdSysctlUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final String SYSCTL_FAIL = "Failed sysctl call: {}, Error code: {}";
 
@@ -56,7 +57,7 @@ import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
         size_t.ByReference size = new size_t.ByReference(new size_t(FreeBsdLibc.INT_SIZE));
         Pointer p = new Memory(size.longValue());
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, p, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+//            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
             return def;
         }
         return p.getInt(0);
@@ -73,7 +74,7 @@ import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
         size_t.ByReference size = new size_t.ByReference(new size_t(FreeBsdLibc.UINT64_SIZE));
         Pointer p = new Memory(size.longValue());
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, p, size, null, size_t.ZERO)) {
-            LOG.warn(SYSCTL_FAIL, name, Native.getLastError());
+//            LOG.warn(SYSCTL_FAIL, name, Native.getLastError());
             return def;
         }
         return p.getLong(0);
@@ -90,13 +91,13 @@ import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
         // Call first time with null pointer to get value of size
         size_t.ByReference size = new size_t.ByReference();
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, null, size, null, size_t.ZERO)) {
-            LOG.warn(SYSCTL_FAIL, name, Native.getLastError());
+//            LOG.warn(SYSCTL_FAIL, name, Native.getLastError());
             return def;
         }
         // Add 1 to size for null terminated string
         Pointer p = new Memory(size.longValue() + 1L);
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, p, size, null, size_t.ZERO)) {
-            LOG.warn(SYSCTL_FAIL, name, Native.getLastError());
+//            LOG.warn(SYSCTL_FAIL, name, Native.getLastError());
             return def;
         }
         return p.getString(0);
@@ -111,8 +112,8 @@ import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
      */
     public static boolean sysctl(String name, Structure struct) {
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, struct.getPointer(),
-            new size_t.ByReference(new size_t(struct.size())), null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+                new size_t.ByReference(new size_t(struct.size())), null, size_t.ZERO)) {
+//            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
             return false;
         }
         struct.read();
@@ -129,12 +130,12 @@ import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
     public static Memory sysctl(String name) {
         size_t.ByReference size = new size_t.ByReference();
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, null, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+//            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
             return null;
         }
         Memory m = new Memory(size.longValue());
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, m, size, null, size_t.ZERO)) {
-            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
+//            LOG.error(SYSCTL_FAIL, name, Native.getLastError());
             return null;
         }
         return m;

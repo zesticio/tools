@@ -30,7 +30,6 @@ import com.sun.jna.platform.mac.CoreFoundation.CFTypeRef;
 import com.sun.jna.platform.mac.IOKit.IOIterator;
 import com.sun.jna.platform.mac.IOKit.IORegistryEntry;
 import com.sun.jna.platform.mac.IOKitUtil;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.Immutable;
 import com.zestic.system.hardware.Display;
 import com.zestic.system.hardware.common.AbstractDisplay;
@@ -41,9 +40,10 @@ import java.util.List;
 /*
  * A Display
  */
-@Immutable final class MacDisplay extends AbstractDisplay {
+@Immutable
+final class MacDisplay extends AbstractDisplay {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(MacDisplay.class);
 
     /*
      * Constructor for MacDisplay.
@@ -52,7 +52,7 @@ import java.util.List;
      */
     MacDisplay(byte[] edid) {
         super(edid);
-        LOG.debug("Initialized MacDisplay");
+        logger.debug("Initialized MacDisplay");
     }
 
     /*

@@ -27,7 +27,6 @@ import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
 import com.zestic.system.software.common.AbstractOSProcess;
@@ -47,17 +46,18 @@ import java.util.stream.Collectors;
 /*
  * OSProcess implementation
  */
-@ThreadSafe public class FreeBsdOSProcess extends AbstractOSProcess {
+@ThreadSafe
+public class FreeBsdOSProcess extends AbstractOSProcess {
 
     static final String PS_THREAD_COLUMNS =
-        Arrays.stream(PsThreadColumns.values()).map(Enum::name).map(String::toLowerCase)
-            .collect(Collectors.joining(","));
-    private static final Log LOG = Log.get();
+            Arrays.stream(PsThreadColumns.values()).map(Enum::name).map(String::toLowerCase)
+                    .collect(Collectors.joining(","));
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(FreeBsdOSProcess.class);
     private static final int ARGMAX = BsdSysctlUtil.sysctl("kern.argmax", 0);
     private Supplier<Integer> bitness = Memoizer.memoize(this::queryBitness);
     private Supplier<List<String>> arguments = Memoizer.memoize(this::queryArguments);
     private Supplier<Map<String, String>> environmentVariables =
-        Memoizer.memoize(this::queryEnvironmentVariables);
+            Memoizer.memoize(this::queryEnvironmentVariables);
     private String name;
     private String path = "";
     private String user;
@@ -81,20 +81,24 @@ import java.util.stream.Collectors;
     private long contextSwitches;
     private String commandLineBackup;
     private Supplier<String> commandLine = Memoizer.memoize(this::queryCommandLine);
+
     public FreeBsdOSProcess(int pid, Map<PsKeywords, String> psMap) {
         super(pid);
         updateAttributes(psMap);
     }
 
-    @Override public String getName() {
+    @Override
+    public String getName() {
         return this.name;
     }
 
-    @Override public String getPath() {
+    @Override
+    public String getPath() {
         return this.path;
     }
 
-    @Override public String getCommandLine() {
+    @Override
+    public String getCommandLine() {
         return this.commandLine.get();
     }
 
@@ -103,7 +107,8 @@ import java.util.stream.Collectors;
         return cl.isEmpty() ? this.commandLineBackup : cl;
     }
 
-    @Override public List<String> getArguments() {
+    @Override
+    public List<String> getArguments() {
         return arguments.get();
     }
 
@@ -121,18 +126,17 @@ import java.util.stream.Collectors;
             // Fetch arguments
             if (FreeBsdLibc.INSTANCE.sysctl(mib, mib.length, m, size, null, size_t.ZERO) == 0) {
                 return Collections.unmodifiableList(ParseUtil.parseByteArrayToStrings(
-                    m.getByteArray(0, size.getValue().intValue())));
+                        m.getByteArray(0, size.getValue().intValue())));
             } else {
 
-                LOG.warn(
-                    "Failed sysctl call for process arguments (kern.proc.args), process {} may not exist. Error code: {}",
-                    getProcessID(), Native.getLastError());
+                LOG.warn("Failed sysctl call for process arguments (kern.proc.args), process {" + getProcessID() + "} may not exist. Error code: {" + Native.getLastError() + "}");
             }
         }
         return Collections.emptyList();
     }
 
-    @Override public Map<String, String> getEnvironmentVariables() {
+    @Override
+    public Map<String, String> getEnvironmentVariables() {
         return environmentVariables.get();
     }
 
@@ -150,93 +154,112 @@ import java.util.stream.Collectors;
             // Fetch environment variables
             if (FreeBsdLibc.INSTANCE.sysctl(mib, mib.length, m, size, null, size_t.ZERO) == 0) {
                 return Collections.unmodifiableMap(ParseUtil.parseByteArrayToStringMap(
-                    m.getByteArray(0, size.getValue().intValue())));
+                        m.getByteArray(0, size.getValue().intValue())));
             } else {
                 LOG.warn(
-                    "Failed sysctl call for process environment variables (kern.proc.env), process {} may not exist. Error code: {}",
-                    getProcessID(), Native.getLastError());
+                        "Failed sysctl call for process environment variables (kern.proc.env), process {" + getProcessID() + "} may not exist. Error code: {" + Native.getLastError() + "}");
             }
         }
         return Collections.emptyMap();
     }
 
-    @Override public String getCurrentWorkingDirectory() {
+    @Override
+    public String getCurrentWorkingDirectory() {
         return ProcstatUtil.getCwd(getProcessID());
     }
 
-    @Override public String getUser() {
+    @Override
+    public String getUser() {
         return this.user;
     }
 
-    @Override public String getUserID() {
+    @Override
+    public String getUserID() {
         return this.userID;
     }
 
-    @Override public String getGroup() {
+    @Override
+    public String getGroup() {
         return this.group;
     }
 
-    @Override public String getGroupID() {
+    @Override
+    public String getGroupID() {
         return this.groupID;
     }
 
-    @Override public OSProcess.State getState() {
+    @Override
+    public OSProcess.State getState() {
         return this.state;
     }
 
-    @Override public int getParentProcessID() {
+    @Override
+    public int getParentProcessID() {
         return this.parentProcessID;
     }
 
-    @Override public int getThreadCount() {
+    @Override
+    public int getThreadCount() {
         return this.threadCount;
     }
 
-    @Override public int getPriority() {
+    @Override
+    public int getPriority() {
         return this.priority;
     }
 
-    @Override public long getVirtualSize() {
+    @Override
+    public long getVirtualSize() {
         return this.virtualSize;
     }
 
-    @Override public long getResidentSetSize() {
+    @Override
+    public long getResidentSetSize() {
         return this.residentSetSize;
     }
 
-    @Override public long getKernelTime() {
+    @Override
+    public long getKernelTime() {
         return this.kernelTime;
     }
 
-    @Override public long getUserTime() {
+    @Override
+    public long getUserTime() {
         return this.userTime;
     }
 
-    @Override public long getUpTime() {
+    @Override
+    public long getUpTime() {
         return this.upTime;
     }
 
-    @Override public long getStartTime() {
+    @Override
+    public long getStartTime() {
         return this.startTime;
     }
 
-    @Override public long getBytesRead() {
+    @Override
+    public long getBytesRead() {
         return this.bytesRead;
     }
 
-    @Override public long getBytesWritten() {
+    @Override
+    public long getBytesWritten() {
         return this.bytesWritten;
     }
 
-    @Override public long getOpenFiles() {
+    @Override
+    public long getOpenFiles() {
         return ProcstatUtil.getOpenFiles(getProcessID());
     }
 
-    @Override public int getBitness() {
+    @Override
+    public int getBitness() {
         return this.bitness.get();
     }
 
-    @Override public long getAffinityMask() {
+    @Override
+    public long getAffinityMask() {
         long bitMask = 0L;
         // Would prefer to use native cpuset_getaffinity call but variable sizing is
         // kernel-dependent and requires C macros, so we use commandline instead.
@@ -279,7 +302,8 @@ import java.util.stream.Collectors;
         return 0;
     }
 
-    @Override public List<OSThread> getThreadDetails() {
+    @Override
+    public List<OSThread> getThreadDetails() {
         List<OSThread> threads = new ArrayList<>();
         String psCommand = "ps -awwxo " + PS_THREAD_COLUMNS + " -H";
         if (getProcessID() >= 0) {
@@ -292,7 +316,7 @@ import java.util.stream.Collectors;
             // Fill list
             for (String thread : threadList) {
                 Map<PsThreadColumns, String> threadMap =
-                    ParseUtil.stringToEnumMap(PsThreadColumns.class, thread.trim(), ' ');
+                        ParseUtil.stringToEnumMap(PsThreadColumns.class, thread.trim(), ' ');
                 if (threadMap.containsKey(PsThreadColumns.PRI)) {
                     threads.add(new FreeBsdOSThread(getProcessID(), threadMap));
                 }
@@ -301,26 +325,30 @@ import java.util.stream.Collectors;
         return threads;
     }
 
-    @Override public long getMinorFaults() {
+    @Override
+    public long getMinorFaults() {
         return this.minorFaults;
     }
 
-    @Override public long getMajorFaults() {
+    @Override
+    public long getMajorFaults() {
         return this.majorFaults;
     }
 
-    @Override public long getContextSwitches() {
+    @Override
+    public long getContextSwitches() {
         return this.contextSwitches;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         String psCommand =
-            "ps -awwxo " + FreeBsdOperatingSystem.PS_COMMAND_ARGS + " -p " + getProcessID();
+                "ps -awwxo " + FreeBsdOperatingSystem.PS_COMMAND_ARGS + " -p " + getProcessID();
         List<String> procList = ExecutingCommand.runNative(psCommand);
         if (procList.size() > 1) {
             // skip header row
             Map<PsKeywords, String> psMap =
-                ParseUtil.stringToEnumMap(PsKeywords.class, procList.get(1).trim(), ' ');
+                    ParseUtil.stringToEnumMap(PsKeywords.class, procList.get(1).trim(), ' ');
             // Check if last (thus all) value populated
             if (psMap.containsKey(PsKeywords.ARGS)) {
                 return updateAttributes(psMap);
@@ -371,15 +399,15 @@ import java.util.stream.Collectors;
         this.startTime = now - this.upTime;
         this.kernelTime = ParseUtil.parseDHMSOrDefault(psMap.get(PsKeywords.SYSTIME), 0L);
         this.userTime =
-            ParseUtil.parseDHMSOrDefault(psMap.get(PsKeywords.TIME), 0L) - this.kernelTime;
+                ParseUtil.parseDHMSOrDefault(psMap.get(PsKeywords.TIME), 0L) - this.kernelTime;
         this.path = psMap.get(PsKeywords.COMM);
         this.name = this.path.substring(this.path.lastIndexOf('/') + 1);
         this.minorFaults = ParseUtil.parseLongOrDefault(psMap.get(PsKeywords.MAJFLT), 0L);
         this.majorFaults = ParseUtil.parseLongOrDefault(psMap.get(PsKeywords.MINFLT), 0L);
         long nonVoluntaryContextSwitches =
-            ParseUtil.parseLongOrDefault(psMap.get(PsKeywords.NVCSW), 0L);
+                ParseUtil.parseLongOrDefault(psMap.get(PsKeywords.NVCSW), 0L);
         long voluntaryContextSwitches =
-            ParseUtil.parseLongOrDefault(psMap.get(PsKeywords.NIVCSW), 0L);
+                ParseUtil.parseLongOrDefault(psMap.get(PsKeywords.NIVCSW), 0L);
         this.contextSwitches = voluntaryContextSwitches + nonVoluntaryContextSwitches;
         this.commandLineBackup = psMap.get(PsKeywords.ARGS);
         return true;

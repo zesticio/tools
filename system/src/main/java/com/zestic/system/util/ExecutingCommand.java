@@ -23,10 +23,10 @@
  */
 package com.zestic.system.util;
 
-import com.zestic.log.Log;
 import com.zestic.system.PlatformEnum;
 import com.zestic.system.SystemInfo;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,9 +40,10 @@ import java.util.List;
  * A class for executing on the command line and returning the result of
  * execution.
  */
-@ThreadSafe public final class ExecutingCommand {
+@ThreadSafe
+public final class ExecutingCommand {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final String[] DEFAULT_ENV = getDefaultEnv();
 
@@ -52,9 +53,9 @@ import java.util.List;
     private static String[] getDefaultEnv() {
         PlatformEnum platform = SystemInfo.getCurrentPlatform();
         if (platform == PlatformEnum.WINDOWS) {
-            return new String[] {"LANGUAGE=C"};
+            return new String[]{"LANGUAGE=C"};
         } else if (platform != PlatformEnum.UNKNOWN) {
-            return new String[] {"LC_ALL=C"};
+            return new String[]{"LC_ALL=C"};
         } else {
             return null; // NOSONAR squid:S1168
         }
@@ -112,26 +113,23 @@ import java.util.List;
         try {
             p = Runtime.getRuntime().exec(cmdToRunWithArgs, envp);
         } catch (SecurityException | IOException e) {
-            LOG.trace("Couldn't run command {}: {}", Arrays.toString(cmdToRunWithArgs),
-                e.getMessage());
+            LOG.trace("Couldn't run command {" + Arrays.toString(cmdToRunWithArgs) + "}: {" + e.getMessage() + "}");
             return new ArrayList<>(0);
         }
 
         ArrayList<String> sa = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(p.getInputStream(), Charset.defaultCharset()))) {
+                new InputStreamReader(p.getInputStream(), Charset.defaultCharset()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 sa.add(line);
             }
             p.waitFor();
         } catch (IOException e) {
-            LOG.trace("Problem reading output from {}: {}", Arrays.toString(cmdToRunWithArgs),
-                e.getMessage());
+            LOG.trace("Problem reading output from {"+Arrays.toString(cmdToRunWithArgs)+"}: {"+e.getMessage()+"}");
             return new ArrayList<>(0);
         } catch (InterruptedException ie) {
-            LOG.trace("Interrupted while reading output from {}: {}",
-                Arrays.toString(cmdToRunWithArgs), ie.getMessage());
+            LOG.trace("Interrupted while reading output from {"+Arrays.toString(cmdToRunWithArgs)+"}: {"+ie.getMessage()+"}");
             Thread.currentThread().interrupt();
         }
         return sa;

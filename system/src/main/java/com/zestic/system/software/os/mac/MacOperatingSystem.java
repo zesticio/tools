@@ -26,10 +26,10 @@ package com.zestic.system.software.os.mac;
 import com.sun.jna.platform.mac.SystemB;
 import com.sun.jna.platform.mac.SystemB.ProcTaskInfo;
 import com.sun.jna.platform.mac.SystemB.Timeval;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.mac.Who;
 import com.zestic.system.driver.mac.WindowInfo;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.common.AbstractOperatingSystem;
 import com.zestic.system.software.os.*;
 import com.zestic.system.util.ExecutingCommand;
@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
     public static final String MACOS_VERSIONS_PROPERTIES =
         "com.zestic.system.macos.versions.properties";
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final String SYSTEM_LIBRARY_LAUNCH_AGENTS = "/System/Library/LaunchAgents";
     private static final String SYSTEM_LIBRARY_LAUNCH_DAEMONS = "/System/Library/LaunchDaemons";
     private static final long BOOTTIME;
@@ -120,7 +120,7 @@ import java.util.stream.Collectors;
             codeName = verProps.getProperty(this.major + "." + this.minor);
         }
         if (Util.isBlank(codeName)) {
-            LOG.warn("Unable to parse version {}.{} to a codename.", this.major, this.minor);
+//            LOG.warn("Unable to parse version {}.{} to a codename.", this.major, this.minor);
         }
         return codeName;
     }

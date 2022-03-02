@@ -37,8 +37,8 @@ import com.sun.jna.platform.mac.IOKit.IORegistryEntry;
 import com.sun.jna.platform.mac.IOKitUtil;
 import com.sun.jna.platform.mac.SystemB;
 import com.sun.jna.platform.mac.SystemB.Statfs;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.common.AbstractFileSystem;
 import com.zestic.system.software.os.OSFileStore;
 import com.zestic.system.util.FileSystemUtil;
@@ -61,25 +61,26 @@ import java.util.stream.Collectors;
  * implementation specific means of file storage. In macOS, these are found in
  * the /Volumes directory.
  */
-@ThreadSafe public class MacFileSystem extends AbstractFileSystem {
+@ThreadSafe
+public class MacFileSystem extends AbstractFileSystem {
 
     public static final String OSHI_MAC_FS_PATH_EXCLUDES =
-        "com.zestic.system.os.mac.filesystem.path.excludes";
+            "com.zestic.system.os.mac.filesystem.path.excludes";
     public static final String OSHI_MAC_FS_PATH_INCLUDES =
-        "com.zestic.system.os.mac.filesystem.path.includes";
+            "com.zestic.system.os.mac.filesystem.path.includes";
     public static final String OSHI_MAC_FS_VOLUME_EXCLUDES =
-        "com.zestic.system.os.mac.filesystem.volume.excludes";
+            "com.zestic.system.os.mac.filesystem.volume.excludes";
     public static final String OSHI_MAC_FS_VOLUME_INCLUDES =
-        "com.zestic.system.os.mac.filesystem.volume.includes";
-    private static final Log LOG = Log.get();
+            "com.zestic.system.os.mac.filesystem.volume.includes";
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final List<PathMatcher> FS_PATH_EXCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_PATH_EXCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_PATH_EXCLUDES);
     private static final List<PathMatcher> FS_PATH_INCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_PATH_INCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_PATH_INCLUDES);
     private static final List<PathMatcher> FS_VOLUME_EXCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_VOLUME_EXCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_VOLUME_EXCLUDES);
     private static final List<PathMatcher> FS_VOLUME_INCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_VOLUME_INCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_VOLUME_INCLUDES);
 
     // Regexp matcher for /dev/disk1 etc.
     private static final Pattern LOCAL_DISK = Pattern.compile("/dev/disk\\d");
@@ -149,7 +150,7 @@ import java.util.stream.Collectors;
             // Open a DiskArbitration session to get VolumeName of file systems
             // with bsd names
             DASessionRef session = DiskArbitration.INSTANCE.DASessionCreate(
-                CoreFoundation.INSTANCE.CFAllocatorGetDefault());
+                    CoreFoundation.INSTANCE.CFAllocatorGetDefault());
             if (session == null) {
                 LOG.error("Unable to open session to DiskArbitration framework.");
             } else {
@@ -159,7 +160,7 @@ import java.util.stream.Collectors;
                 Statfs[] fs = new Statfs[numfs];
                 // Fill array with results
                 numfs = SystemB.INSTANCE.getfsstat64(fs, numfs * new Statfs().size(),
-                    SystemB.MNT_NOWAIT);
+                        SystemB.MNT_NOWAIT);
                 for (int f = 0; f < numfs; f++) {
                     // Mount on name will match mounted path, e.g. /Volumes/foo
                     // Mount to name will match canonical path., e.g., /dev/disk0s2
@@ -174,9 +175,9 @@ import java.util.stream.Collectors;
 
                     // Skip non-local drives if requested, and exclude pseudo file systems
                     if ((localOnly && (flags & MNT_LOCAL) == 0) || !path.equals("/") && (
-                        PSEUDO_FS_TYPES.contains(type) || FileSystemUtil.isFileStoreExcluded(path,
-                            volume, FS_PATH_INCLUDES, FS_PATH_EXCLUDES, FS_VOLUME_INCLUDES,
-                            FS_VOLUME_EXCLUDES))) {
+                            PSEUDO_FS_TYPES.contains(type) || FileSystemUtil.isFileStoreExcluded(path,
+                                    volume, FS_PATH_INCLUDES, FS_PATH_EXCLUDES, FS_VOLUME_INCLUDES,
+                                    FS_VOLUME_EXCLUDES))) {
                         continue;
                     }
 
@@ -184,7 +185,7 @@ import java.util.stream.Collectors;
                     if (LOCAL_DISK.matcher(volume).matches()) {
                         description = "Local Disk";
                     } else if (volume.startsWith("localhost:") || volume.startsWith("//")
-                        || volume.startsWith("smb://") || NETWORK_FS_TYPES.contains(type)) {
+                            || volume.startsWith("smb://") || NETWORK_FS_TYPES.contains(type)) {
                         description = "Network Drive";
                     }
                     File file = new File(path);
@@ -198,10 +199,10 @@ import java.util.stream.Collectors;
                     }
 
                     StringBuilder options =
-                        new StringBuilder((MNT_RDONLY & flags) == 0 ? "rw" : "ro");
+                            new StringBuilder((MNT_RDONLY & flags) == 0 ? "rw" : "ro");
                     String moreOptions =
-                        OPTIONS_MAP.entrySet().stream().filter(e -> (e.getKey() & flags) > 0)
-                            .map(Map.Entry::getValue).collect(Collectors.joining(","));
+                            OPTIONS_MAP.entrySet().stream().filter(e -> (e.getKey() & flags) > 0)
+                                    .map(Map.Entry::getValue).collect(Collectors.joining(","));
                     if (!moreOptions.isEmpty()) {
                         options.append(',').append(moreOptions);
                     }
@@ -214,10 +215,10 @@ import java.util.stream.Collectors;
                         // Get the DiskArbitration dictionary for this disk,
                         // which has volumename
                         DADiskRef disk = DiskArbitration.INSTANCE.DADiskCreateFromBSDName(
-                            CoreFoundation.INSTANCE.CFAllocatorGetDefault(), session, volume);
+                                CoreFoundation.INSTANCE.CFAllocatorGetDefault(), session, volume);
                         if (disk != null) {
                             CFDictionaryRef diskInfo =
-                                DiskArbitration.INSTANCE.DADiskCopyDescription(disk);
+                                    DiskArbitration.INSTANCE.DADiskCopyDescription(disk);
                             if (diskInfo != null) {
                                 // get volume name from its key
                                 Pointer result = diskInfo.getValue(daVolumeNameKey);
@@ -228,7 +229,7 @@ import java.util.stream.Collectors;
                         }
                         // Search for bsd name in IOKit registry for UUID
                         CFMutableDictionaryRef matchingDict =
-                            IOKitUtil.getBSDNameMatchingDict(bsdName);
+                                IOKitUtil.getBSDNameMatchingDict(bsdName);
                         if (matchingDict != null) {
                             // search for all IOservices that match the bsd name
                             IOIterator fsIter = IOKitUtil.getMatchingServices(matchingDict);
@@ -250,8 +251,8 @@ import java.util.stream.Collectors;
                     }
 
                     fsList.add(new MacOSFileStore(name, volume, name, path, options.toString(),
-                        uuid == null ? "" : uuid, "", description, type, file.getFreeSpace(),
-                        file.getUsableSpace(), file.getTotalSpace(), fs[f].f_ffree, fs[f].f_files));
+                            uuid == null ? "" : uuid, "", description, type, file.getFreeSpace(),
+                            file.getUsableSpace(), file.getTotalSpace(), fs[f].f_ffree, fs[f].f_files));
                 }
                 daVolumeNameKey.release();
                 // Close DA session
@@ -261,16 +262,19 @@ import java.util.stream.Collectors;
         return fsList;
     }
 
-    @Override public List<OSFileStore> getFileStores(boolean localOnly) {
+    @Override
+    public List<OSFileStore> getFileStores(boolean localOnly) {
         // List of file systems
         return getFileStoreMatching(null, localOnly);
     }
 
-    @Override public long getOpenFileDescriptors() {
+    @Override
+    public long getOpenFileDescriptors() {
         return SysctlUtil.sysctl("kern.num_files", 0);
     }
 
-    @Override public long getMaxFileDescriptors() {
+    @Override
+    public long getMaxFileDescriptors() {
         return SysctlUtil.sysctl("kern.maxfiles", 0);
     }
 }

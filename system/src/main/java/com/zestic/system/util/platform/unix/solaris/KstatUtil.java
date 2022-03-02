@@ -29,10 +29,11 @@ import com.sun.jna.platform.unix.solaris.LibKstat;
 import com.sun.jna.platform.unix.solaris.LibKstat.Kstat;
 import com.sun.jna.platform.unix.solaris.LibKstat.KstatCtl;
 import com.sun.jna.platform.unix.solaris.LibKstat.KstatNamed;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.FormatUtil;
 import com.zestic.system.util.Util;
+import org.apache.log4j.Priority;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -42,9 +43,10 @@ import java.util.concurrent.locks.ReentrantLock;
 /*
  * Provides access to kstat information on Solaris
  */
-@ThreadSafe public final class KstatUtil {
+@ThreadSafe
+public final class KstatUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final LibKstat KS = LibKstat.INSTANCE;
 
@@ -85,7 +87,7 @@ import java.util.concurrent.locks.ReentrantLock;
         }
         Pointer p = KS.kstat_data_lookup(ksp, name);
         if (p == null) {
-            LOG.debug("Failed to lookup kstat value for key {}", name);
+            LOG.debug("Failed to lookup kstat value for key {}" + name);
             return "";
         }
         KstatNamed data = new KstatNamed(p);
@@ -103,7 +105,7 @@ import java.util.concurrent.locks.ReentrantLock;
             case LibKstat.KSTAT_DATA_STRING:
                 return data.value.str.addr.getString(0);
             default:
-                LOG.error("Unimplemented kstat data type {}", data.data_type);
+                LOG.error("Unimplemented kstat data type {" + data.data_type + "}");
                 return "";
         }
     }
@@ -127,10 +129,10 @@ import java.util.concurrent.locks.ReentrantLock;
         }
         Pointer p = KS.kstat_data_lookup(ksp, name);
         if (p == null) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Failed lo lookup kstat value on {}:{}:{} for key {}",
-                    Native.toString(ksp.ks_module, StandardCharsets.US_ASCII), ksp.ks_instance,
-                    Native.toString(ksp.ks_name, StandardCharsets.US_ASCII), name);
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+//                LOG.error("Failed lo lookup kstat value on {}:{}:{} for key {}",
+//                    Native.toString(ksp.ks_module, StandardCharsets.US_ASCII), ksp.ks_instance,
+//                    Native.toString(ksp.ks_name, StandardCharsets.US_ASCII), name);
             }
             return 0L;
         }
@@ -145,7 +147,7 @@ import java.util.concurrent.locks.ReentrantLock;
             case LibKstat.KSTAT_DATA_UINT64:
                 return data.value.ui64;
             default:
-                LOG.error("Unimplemented or non-numeric kstat data type {}", data.data_type);
+                LOG.error("Unimplemented or non-numeric kstat data type {}" + data.data_type);
                 return 0L;
         }
     }
@@ -185,10 +187,10 @@ import java.util.concurrent.locks.ReentrantLock;
             while (0 > KS.kstat_read(KC, ksp, null)) {
                 if (LibKstat.EAGAIN != Native.getLastError() || 5 <= ++retry) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Failed to read kstat {}:{}:{}",
-                            Native.toString(ksp.ks_module, StandardCharsets.US_ASCII),
-                            ksp.ks_instance,
-                            Native.toString(ksp.ks_name, StandardCharsets.US_ASCII));
+//                        LOG.debug("Failed to read kstat {}:{}:{}",
+//                            Native.toString(ksp.ks_module, StandardCharsets.US_ASCII),
+//                            ksp.ks_instance,
+//                            Native.toString(ksp.ks_name, StandardCharsets.US_ASCII));
                     }
                     return false;
                 }
@@ -233,9 +235,9 @@ import java.util.concurrent.locks.ReentrantLock;
             for (Kstat ksp = KS.kstat_lookup(KC, module, instance, name);
                  ksp != null; ksp = ksp.next()) {
                 if ((module == null || module.equals(
-                    Native.toString(ksp.ks_module, StandardCharsets.US_ASCII))) && (instance < 0
-                    || instance == ksp.ks_instance) && (name == null || name.equals(
-                    Native.toString(ksp.ks_name, StandardCharsets.US_ASCII)))) {
+                        Native.toString(ksp.ks_module, StandardCharsets.US_ASCII))) && (instance < 0
+                        || instance == ksp.ks_instance) && (name == null || name.equals(
+                        Native.toString(ksp.ks_name, StandardCharsets.US_ASCII)))) {
                     kstats.add(ksp);
                 }
             }
@@ -259,7 +261,8 @@ import java.util.concurrent.locks.ReentrantLock;
         /*
          * Release the lock on the chain.
          */
-        @Override public void close() {
+        @Override
+        public void close() {
             CHAIN.unlock();
         }
     }

@@ -23,8 +23,8 @@
  */
 package com.zestic.system.util;
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.util.platform.windows.PerfCounterQuery;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,9 +34,10 @@ import java.util.Arrays;
 /*
  * EDID parsing utility.
  */
-@ThreadSafe public final class EdidUtil {
+@ThreadSafe
+public final class EdidUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
 
     private EdidUtil() {
     }
@@ -50,11 +51,11 @@ import java.util.Arrays;
     public static String getManufacturerID(byte[] edid) {
         // Bytes 8-9 are manufacturer ID in 3 5-bit characters.
         String temp = String.format("%8s%8s", Integer.toBinaryString(edid[8] & 0xFF),
-            Integer.toBinaryString(edid[9] & 0xFF)).replace(' ', '0');
-        LOG.debug("Manufacurer ID: {}", temp);
+                Integer.toBinaryString(edid[9] & 0xFF)).replace(' ', '0');
+        LOG.debug("Manufacurer ID: {}" + temp);
         return String.format("%s%s%s", (char) (64 + Integer.parseInt(temp.substring(1, 6), 2)),
-            (char) (64 + Integer.parseInt(temp.substring(7, 11), 2)),
-            (char) (64 + Integer.parseInt(temp.substring(12, 16), 2))).replace("@", "");
+                (char) (64 + Integer.parseInt(temp.substring(7, 11), 2)),
+                (char) (64 + Integer.parseInt(temp.substring(12, 16), 2))).replace("@", "");
     }
 
     /*
@@ -66,8 +67,8 @@ import java.util.Arrays;
     public static String getProductID(byte[] edid) {
         // Bytes 10-11 are product ID expressed in hex characters
         return Integer.toHexString(
-            ByteBuffer.wrap(Arrays.copyOfRange(edid, 10, 12)).order(ByteOrder.LITTLE_ENDIAN)
-                .getShort() & 0xffff);
+                ByteBuffer.wrap(Arrays.copyOfRange(edid, 10, 12)).order(ByteOrder.LITTLE_ENDIAN)
+                        .getShort() & 0xffff);
     }
 
     /*
@@ -80,17 +81,17 @@ import java.util.Arrays;
     public static String getSerialNo(byte[] edid) {
         // Bytes 12-15 are Serial number (last 4 characters)
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Serial number: {}", Arrays.toString(Arrays.copyOfRange(edid, 12, 16)));
+            LOG.debug("Serial number: {}" + Arrays.toString(Arrays.copyOfRange(edid, 12, 16)));
         }
         return String.format("%s%s%s%s", getAlphaNumericOrHex(edid[15]),
-            getAlphaNumericOrHex(edid[14]), getAlphaNumericOrHex(edid[13]),
-            getAlphaNumericOrHex(edid[12]));
+                getAlphaNumericOrHex(edid[14]), getAlphaNumericOrHex(edid[13]),
+                getAlphaNumericOrHex(edid[12]));
     }
 
     private static String getAlphaNumericOrHex(byte b) {
         return Character.isLetterOrDigit((char) b) ?
-            String.format("%s", (char) b) :
-            String.format("%02X", b);
+                String.format("%s", (char) b) :
+                String.format("%02X", b);
     }
 
     /*
@@ -113,7 +114,7 @@ import java.util.Arrays;
     public static int getYear(byte[] edid) {
         // Byte 17 is manufacture year-1990
         byte temp = edid[17];
-        LOG.debug("Year-1990: {}", temp);
+        LOG.debug("Year-1990: {}" + temp);
         return temp + 1990;
     }
 
@@ -193,7 +194,7 @@ import java.util.Arrays;
      */
     public static String getTimingDescriptor(byte[] desc) {
         int clock = ByteBuffer.wrap(Arrays.copyOfRange(desc, 0, 2)).order(ByteOrder.LITTLE_ENDIAN)
-            .getShort() / 100;
+                .getShort() / 100;
         int hActive = (desc[2] & 0xff) + ((desc[4] & 0xf0) << 4);
         int vActive = (desc[5] & 0xff) + ((desc[7] & 0xf0) << 4);
         return String.format("Clock %dMHz, Active Pixels %dx%d ", clock, hActive, vActive);
@@ -207,7 +208,7 @@ import java.util.Arrays;
      */
     public static String getDescriptorRangeLimits(byte[] desc) {
         return String.format("Field Rate %d-%d Hz vertical, %d-%d Hz horizontal, Max clock: %d MHz",
-            desc[5], desc[6], desc[7], desc[8], desc[9] * 10);
+                desc[5], desc[6], desc[7], desc[8], desc[9] * 10);
     }
 
     /*
@@ -233,12 +234,12 @@ import java.util.Arrays;
         sb.append(", ").append(EdidUtil.isDigital(edid) ? "Digital" : "Analog");
         sb.append(", Serial=").append(EdidUtil.getSerialNo(edid));
         sb.append(", ManufDate=").append(EdidUtil.getWeek(edid) * 12 / 52 + 1).append('/')
-            .append(EdidUtil.getYear(edid));
+                .append(EdidUtil.getYear(edid));
         sb.append(", EDID v").append(EdidUtil.getVersion(edid));
         int hSize = EdidUtil.getHcm(edid);
         int vSize = EdidUtil.getVcm(edid);
         sb.append(String.format("%n  %d x %d cm (%.1f x %.1f in)", hSize, vSize, hSize / 2.54,
-            vSize / 2.54));
+                vSize / 2.54));
         byte[][] desc = EdidUtil.getDescriptors(edid);
         for (byte[] b : desc) {
             switch (EdidUtil.getDescriptorType(b)) {
@@ -262,9 +263,9 @@ import java.util.Arrays;
                     break;
                 default:
                     if (EdidUtil.getDescriptorType(b) <= 0x0f
-                        && EdidUtil.getDescriptorType(b) >= 0x00) {
+                            && EdidUtil.getDescriptorType(b) >= 0x00) {
                         sb.append("\n  Manufacturer Data: ")
-                            .append(ParseUtil.byteArrayToHexString(b));
+                                .append(ParseUtil.byteArrayToHexString(b));
                     } else {
                         sb.append("\n  Preferred Timing: ").append(EdidUtil.getTimingDescriptor(b));
                     }

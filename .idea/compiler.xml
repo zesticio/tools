@@ -8,23 +8,23 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="settings" />
-        <module name="dispatch" />
-        <module name="log" />
-        <module name="jredis" />
-        <module name="crypto" />
         <module name="core" />
+        <module name="dispatch" />
         <module name="system" />
         <module name="retrofit" />
         <module name="common" />
+        <module name="jredis" />
         <module name="json" />
         <module name="socket" />
         <module name="buffer" />
+        <module name="crypto" />
         <module name="coin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="amqp" target="11" />
       <module name="excel" target="11" />
+      <module name="log" target="11" />
       <module name="utils" target="11" />
     </bytecodeTargetLevel>
   </component>

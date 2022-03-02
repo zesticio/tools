@@ -27,9 +27,9 @@ import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.common.AbstractCentralProcessor;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
 import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc.CpTime;
 import com.zestic.system.util.ExecutingCommand;
@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  */
 @ThreadSafe final class FreeBsdCentralProcessor extends AbstractCentralProcessor {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final Pattern CPUMASK =
         Pattern.compile(".*<cpu\\s.*mask=\"(?:0x)?(\\p{XDigit}+)\".*>.*</cpu>.*");
@@ -285,7 +285,7 @@ import java.util.regex.Pattern;
         // Fetch
         if (0 != FreeBsdLibc.INSTANCE.sysctlbyname(name, p,
             new size_t.ByReference(new size_t(arraySize)), null, size_t.ZERO)) {
-            LOG.error("Failed sysctl call: {}, Error code: {}", name, Native.getLastError());
+//            LOG.error("Failed sysctl call: {}, Error code: {}", name, Native.getLastError());
             return ticks;
         }
         // p now points to the data; need to copy each element

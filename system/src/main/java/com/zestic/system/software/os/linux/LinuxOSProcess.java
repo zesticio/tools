@@ -23,10 +23,10 @@
  */
 package com.zestic.system.software.os.linux;
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.linux.proc.ProcessStat;
 import com.zestic.system.driver.linux.proc.UserGroupInfo;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.common.AbstractOSProcess;
 import com.zestic.system.software.os.OSThread;
 import com.zestic.system.util.ExecutingCommand;
@@ -59,7 +59,7 @@ import static com.zestic.system.util.Memoizer.memoize;
  */
 @ThreadSafe public class LinuxOSProcess extends AbstractOSProcess {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     // Get a list of orders to pass to ParseUtil
     private static final int[] PROC_PID_STAT_ORDERS = new int[ProcPidStat.values().length];
@@ -175,7 +175,7 @@ import static com.zestic.system.util.Memoizer.memoize;
                 return cwd;
             }
         } catch (IOException e) {
-            LOG.trace("Couldn't find cwd for pid {}: {}", getProcessID(), e.getMessage());
+//            LOG.trace("Couldn't find cwd for pid {}: {}", getProcessID(), e.getMessage());
         }
         return "";
     }
@@ -279,7 +279,7 @@ import static com.zestic.system.util.Memoizer.memoize;
                     return buffer[4] == 1 ? 32 : 64;
                 }
             } catch (IOException e) {
-                LOG.warn("Failed to read process file: {}", path);
+//                LOG.warn("Failed to read process file: {}", path);
             }
         }
         return 0;
@@ -311,7 +311,7 @@ import static com.zestic.system.util.Memoizer.memoize;
                 path = path.substring(0, index);
             }
         } catch (InvalidPathException | IOException | UnsupportedOperationException | SecurityException e) {
-            LOG.debug("Unable to open symbolic link {}", procPidExe);
+//            LOG.debug("Unable to open symbolic link {}", procPidExe);
         }
         // Fetch all the values here
         // check for terminated process race condition after last one.

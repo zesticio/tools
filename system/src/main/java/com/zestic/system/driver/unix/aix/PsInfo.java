@@ -28,8 +28,8 @@ import com.sun.jna.Native;
 import com.sun.jna.NativeLong;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
 import com.sun.jna.platform.unix.LibCAPI.ssize_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.unix.aix.AixLibc;
 import com.zestic.system.util.tuples.Pair;
 import com.zestic.system.util.tuples.Triplet;
@@ -46,7 +46,7 @@ import java.util.*;
  * Utility to query /proc/psinfo
  */
 @ThreadSafe public final class PsInfo {
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final AixLibc LIBC = AixLibc.INSTANCE;
 
@@ -107,7 +107,7 @@ import java.util.*;
                 return new Triplet<>(argc, argv, envp);
             }
         } catch (IOException e) {
-            LOG.debug("Failed to read file: {} ", procpsinfo);
+            LOG.debug("Failed to read file: {} " + procpsinfo);
         }
         return null;
     }
@@ -130,7 +130,7 @@ import java.util.*;
             String procas = "/proc/" + pid + "/as";
             int fd = LIBC.open(procas, 0);
             if (fd < 0) {
-                LOG.trace("No permission to read file: {} ", procas);
+                LOG.trace("No permission to read file: {} " + procas);
                 return new Pair<>(args, env);
             }
             try {
@@ -231,7 +231,7 @@ import java.util.*;
             ssize_t result = LIBC.pread(fd, buffer, bufSize, new NativeLong(newStart));
             // May return less than asked but should be at least a full page
             if (result.longValue() < PAGE_SIZE) {
-                LOG.debug("Failed to read page from address space: {} bytes read",
+                LOG.debug("Failed to read page from address space: {} bytes read" +
                     result.longValue());
                 return 0;
             }

@@ -25,11 +25,11 @@ package com.zestic.system.hardware.platform.windows;
 
 import com.sun.jna.platform.win32.COM.COMException;
 import com.sun.jna.platform.win32.COM.WbemcliUtil.WmiResult;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.windows.wmi.*;
 import com.zestic.system.driver.windows.wmi.OhmSensor.ValueProperty;
 import com.zestic.system.hardware.common.AbstractSensors;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.platform.windows.WmiQueryHandler;
 import com.zestic.system.util.platform.windows.WmiUtil;
 
@@ -38,9 +38,10 @@ import java.util.Objects;
 /*
  * Sensors from WMI or Open Hardware Monitor
  */
-@ThreadSafe final class WindowsSensors extends AbstractSensors {
+@ThreadSafe
+final class WindowsSensors extends AbstractSensors {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final String COM_EXCEPTION_MSG = "COM exception: {}";
 
@@ -50,14 +51,14 @@ import java.util.Objects;
         try {
             comInit = h.initCOM();
             WmiResult<OhmHardware.IdentifierProperty> ohmHardware =
-                OhmHardware.queryHwIdentifier(h, "Hardware", "CPU");
+                    OhmHardware.queryHwIdentifier(h, "Hardware", "CPU");
             if (ohmHardware.getResultCount() > 0) {
                 LOG.debug("Found Temperature data in Open Hardware Monitor");
                 String cpuIdentifier =
-                    WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER, 0);
+                        WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER, 0);
                 if (cpuIdentifier.length() > 0) {
                     WmiResult<ValueProperty> ohmSensors =
-                        OhmSensor.querySensorValue(h, cpuIdentifier, "Temperature");
+                            OhmSensor.querySensorValue(h, cpuIdentifier, "Temperature");
                     if (ohmSensors.getResultCount() > 0) {
                         double sum = 0;
                         for (int i = 0; i < ohmSensors.getResultCount(); i++) {
@@ -68,7 +69,7 @@ import java.util.Objects;
                 }
             }
         } catch (COMException e) {
-            LOG.warn(COM_EXCEPTION_MSG, e.getMessage());
+            LOG.warn(COM_EXCEPTION_MSG + e.getMessage());
         } finally {
             if (comInit) {
                 h.unInitCOM();
@@ -81,11 +82,11 @@ import java.util.Objects;
         double tempC = 0d;
         long tempK = 0L;
         WmiResult<MSAcpiThermalZoneTemperature.TemperatureProperty> result =
-            MSAcpiThermalZoneTemperature.queryCurrentTemperature();
+                MSAcpiThermalZoneTemperature.queryCurrentTemperature();
         if (result.getResultCount() > 0) {
             LOG.debug("Found Temperature data in WMI");
             tempK = WmiUtil.getUint32asLong(result,
-                MSAcpiThermalZoneTemperature.TemperatureProperty.CURRENTTEMPERATURE, 0);
+                    MSAcpiThermalZoneTemperature.TemperatureProperty.CURRENTTEMPERATURE, 0);
         }
         if (tempK > 2732L) {
             tempC = tempK / 10d - 273.15;
@@ -101,26 +102,26 @@ import java.util.Objects;
         try {
             comInit = h.initCOM();
             WmiResult<OhmHardware.IdentifierProperty> ohmHardware =
-                OhmHardware.queryHwIdentifier(h, "Hardware", "CPU");
+                    OhmHardware.queryHwIdentifier(h, "Hardware", "CPU");
             if (ohmHardware.getResultCount() > 0) {
                 LOG.debug("Found Fan data in Open Hardware Monitor");
                 String cpuIdentifier =
-                    WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER, 0);
+                        WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER, 0);
                 if (cpuIdentifier.length() > 0) {
                     WmiResult<ValueProperty> ohmSensors =
-                        OhmSensor.querySensorValue(h, cpuIdentifier, "Fan");
+                            OhmSensor.querySensorValue(h, cpuIdentifier, "Fan");
                     if (ohmSensors.getResultCount() > 0) {
                         int[] fanSpeeds = new int[ohmSensors.getResultCount()];
                         for (int i = 0; i < ohmSensors.getResultCount(); i++) {
                             fanSpeeds[i] =
-                                (int) WmiUtil.getFloat(ohmSensors, ValueProperty.VALUE, i);
+                                    (int) WmiUtil.getFloat(ohmSensors, ValueProperty.VALUE, i);
                         }
                         return fanSpeeds;
                     }
                 }
             }
         } catch (COMException e) {
-            LOG.warn(COM_EXCEPTION_MSG, e.getMessage());
+            LOG.warn(COM_EXCEPTION_MSG + e.getMessage());
         } finally {
             if (comInit) {
                 h.unInitCOM();
@@ -148,15 +149,15 @@ import java.util.Objects;
         try {
             comInit = h.initCOM();
             WmiResult<OhmHardware.IdentifierProperty> ohmHardware =
-                OhmHardware.queryHwIdentifier(h, "Sensor", "Voltage");
+                    OhmHardware.queryHwIdentifier(h, "Sensor", "Voltage");
             if (ohmHardware.getResultCount() > 0) {
                 LOG.debug("Found Voltage data in Open Hardware Monitor");
                 // Look for identifier containing "cpu"
                 String cpuIdentifier = null;
                 for (int i = 0; i < ohmHardware.getResultCount(); i++) {
                     String id =
-                        WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER,
-                            i);
+                            WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER,
+                                    i);
                     if (id.toLowerCase().contains("cpu")) {
                         cpuIdentifier = id;
                         break;
@@ -165,18 +166,18 @@ import java.util.Objects;
                 // If none found, just get the first one
                 if (cpuIdentifier == null) {
                     cpuIdentifier =
-                        WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER,
-                            0);
+                            WmiUtil.getString(ohmHardware, OhmHardware.IdentifierProperty.IDENTIFIER,
+                                    0);
                 }
                 // Now fetch sensor
                 WmiResult<ValueProperty> ohmSensors =
-                    OhmSensor.querySensorValue(h, cpuIdentifier, "Voltage");
+                        OhmSensor.querySensorValue(h, cpuIdentifier, "Voltage");
                 if (ohmSensors.getResultCount() > 0) {
                     return WmiUtil.getFloat(ohmSensors, ValueProperty.VALUE, 0);
                 }
             }
         } catch (COMException e) {
-            LOG.warn(COM_EXCEPTION_MSG, e.getMessage());
+            LOG.warn(COM_EXCEPTION_MSG + e.getMessage());
         } finally {
             if (comInit) {
                 h.unInitCOM();
@@ -190,14 +191,14 @@ import java.util.Objects;
         if (voltage.getResultCount() > 1) {
             LOG.debug("Found Voltage data in WMI");
             int decivolts =
-                WmiUtil.getUint16(voltage, Win32Processor.VoltProperty.CURRENTVOLTAGE, 0);
+                    WmiUtil.getUint16(voltage, Win32Processor.VoltProperty.CURRENTVOLTAGE, 0);
             // If the eighth bit is set, bits 0-6 contain the voltage
             // multiplied by 10. If the eighth bit is not set, then the bit
             // setting in VoltageCaps represents the voltage value.
             if (decivolts > 0) {
                 if ((decivolts & 0x80) == 0) {
                     decivolts =
-                        WmiUtil.getUint32(voltage, Win32Processor.VoltProperty.VOLTAGECAPS, 0);
+                            WmiUtil.getUint32(voltage, Win32Processor.VoltProperty.VOLTAGECAPS, 0);
                     // This value is really a bit setting, not decivolts
                     if ((decivolts & 0x1) > 0) {
                         return 5.0;
@@ -215,7 +216,8 @@ import java.util.Objects;
         return 0d;
     }
 
-    @Override public double queryCpuTemperature() {
+    @Override
+    public double queryCpuTemperature() {
         // Attempt to fetch value from Open Hardware Monitor if it is running,
         // as it will give the most accurate results and the time to query (or
         // attempt) is trivial
@@ -233,7 +235,8 @@ import java.util.Objects;
         return tempC;
     }
 
-    @Override public int[] queryFanSpeeds() {
+    @Override
+    public int[] queryFanSpeeds() {
         // Attempt to fetch value from Open Hardware Monitor if it is running
         int[] fanSpeeds = getFansFromOHM();
         if (fanSpeeds.length > 0) {
@@ -251,7 +254,8 @@ import java.util.Objects;
         return new int[0];
     }
 
-    @Override public double queryCpuVoltage() {
+    @Override
+    public double queryCpuVoltage() {
         // Attempt to fetch value from Open Hardware Monitor if it is running
         double volts = getVoltsFromOHM();
         if (volts > 0d) {

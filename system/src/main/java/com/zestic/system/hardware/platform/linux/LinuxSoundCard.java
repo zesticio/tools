@@ -23,11 +23,11 @@
  */
 package com.zestic.system.hardware.platform.linux;
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.Immutable;
 import com.zestic.system.hardware.SoundCard;
 import com.zestic.system.hardware.common.AbstractHardwareAbstractionLayer;
 import com.zestic.system.hardware.common.AbstractSoundCard;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.FileUtil;
 import com.zestic.system.util.platform.linux.ProcPath;
 
@@ -41,7 +41,7 @@ import java.util.Map;
  */
 @Immutable final class LinuxSoundCard extends AbstractSoundCard {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final String CARD_FOLDER = "card";
     private static final String CARDS_FILE = "cards";

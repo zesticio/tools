@@ -28,8 +28,8 @@ import com.sun.jna.platform.win32.*;
 import com.sun.jna.platform.win32.WinBase.FILETIME;
 import com.sun.jna.platform.win32.WinPerf.*;
 import com.sun.jna.ptr.IntByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.platform.windows.PerfCounterWildcardQuery.PdhCounterWildcardProperty;
 import com.zestic.system.util.tuples.Pair;
 import com.zestic.system.util.tuples.Triplet;
@@ -39,16 +39,17 @@ import java.util.*;
 /*
  * Utility to read HKEY_PERFORMANCE_DATA information.
  */
-@ThreadSafe public final class HkeyPerformanceDataUtil {
+@ThreadSafe
+public final class HkeyPerformanceDataUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     /*
      * Do a one-time lookup of the HKEY_PERFORMANCE_TEXT counter indices and store
      * in a map for efficient lookups on-demand.
      */
     private static final String HKEY_PERFORMANCE_TEXT =
-        "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Perflib\\009";
+            "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Perflib\\009";
     private static final String COUNTER = "Counter";
     private static final Map<String, Integer> COUNTER_INDEX_MAP = mapCounterIndicesFromRegistry();
 
@@ -73,7 +74,7 @@ import java.util.*;
      * timestamp in milliseconds since the 1970 Epoch.
      */
     public static <T extends Enum<T> & PdhCounterWildcardProperty> Triplet<List<Map<T, Object>>, Long, Long> readPerfDataFromRegistry(
-        String objectName, Class<T> counterEnum) {
+            String objectName, Class<T> counterEnum) {
         // Load indices
         // e.g., call with "Process" and ProcessPerformanceProperty.class
         Pair<Integer, EnumMap<T, Integer>> indices = getCounterIndices(objectName, counterEnum);
@@ -105,7 +106,7 @@ import java.util.*;
         PERF_DATA_BLOCK perfData = new PERF_DATA_BLOCK(pPerfData.share(0));
         long perfTime100nSec = perfData.PerfTime100nSec.getValue(); // 1601
         long now = FILETIME.filetimeToDate((int) (perfTime100nSec >> 32),
-            (int) (perfTime100nSec & 0xffffffffL)).getTime(); // 1970
+                (int) (perfTime100nSec & 0xffffffffL)).getTime(); // 1970
 
         // Iterate object types.
         long perfObjectOffset = perfData.HeaderLength;
@@ -124,9 +125,9 @@ import java.util.*;
                 Map<Integer, Integer> counterSizeMap = new HashMap<>();
                 for (int counter = 0; counter < perfObject.NumCounters; counter++) {
                     PERF_COUNTER_DEFINITION perfCounter =
-                        new PERF_COUNTER_DEFINITION(pPerfData.share(perfCounterOffset));
+                            new PERF_COUNTER_DEFINITION(pPerfData.share(perfCounterOffset));
                     counterOffsetMap.put(perfCounter.CounterNameTitleIndex,
-                        perfCounter.CounterOffset);
+                            perfCounter.CounterOffset);
                     counterSizeMap.put(perfCounter.CounterNameTitleIndex, perfCounter.CounterSize);
                     // Increment for next Counter
                     perfCounterOffset += perfCounter.ByteLength;
@@ -140,7 +141,7 @@ import java.util.*;
                 List<Map<T, Object>> counterMaps = new ArrayList<>(perfObject.NumInstances);
                 for (int inst = 0; inst < perfObject.NumInstances; inst++) {
                     PERF_INSTANCE_DEFINITION perfInstance =
-                        new PERF_INSTANCE_DEFINITION(pPerfData.share(perfInstanceOffset));
+                            new PERF_INSTANCE_DEFINITION(pPerfData.share(perfInstanceOffset));
                     long perfCounterBlockOffset = perfInstanceOffset + perfInstance.ByteLength;
                     // Populate the enumMap
                     Map<T, Object> counterMap = new EnumMap<>(counterEnum);
@@ -148,7 +149,7 @@ import java.util.*;
                     // First enum index is the name, ignore the counter text which is used for other
                     // purposes
                     counterMap.put(counterKeys[0],
-                        pPerfData.getWideString(perfInstanceOffset + perfInstance.NameOffset));
+                            pPerfData.getWideString(perfInstanceOffset + perfInstance.NameOffset));
                     for (int i = 1; i < counterKeys.length; i++) {
                         T key = counterKeys[i];
                         int keyIndex = COUNTER_INDEX_MAP.get(key.getCounter());
@@ -158,10 +159,10 @@ import java.util.*;
                         // counter values.
                         if (size == 4) {
                             counterMap.put(key, pPerfData.getInt(
-                                perfCounterBlockOffset + counterOffsetMap.get(keyIndex)));
+                                    perfCounterBlockOffset + counterOffsetMap.get(keyIndex)));
                         } else if (size == 8) {
                             counterMap.put(key, pPerfData.getLong(
-                                perfCounterBlockOffset + counterOffsetMap.get(keyIndex)));
+                                    perfCounterBlockOffset + counterOffsetMap.get(keyIndex)));
                         } else {
                             // If counter defined in enum isn't in registry, fail
                             return null;
@@ -176,7 +177,7 @@ import java.util.*;
 
                     // Increment to next instance
                     perfInstanceOffset = perfCounterBlockOffset + new PERF_COUNTER_BLOCK(
-                        pPerfData.share(perfCounterBlockOffset)).ByteLength;
+                            pPerfData.share(perfCounterBlockOffset)).ByteLength;
                 }
                 // We've found the necessary object and are done, no need to look at any other
                 // objects (shouldn't be any). Return results
@@ -204,9 +205,9 @@ import java.util.*;
      * otherwise.
      */
     private static <T extends Enum<T> & PdhCounterWildcardProperty> Pair<Integer, EnumMap<T, Integer>> getCounterIndices(
-        String objectName, Class<T> counterEnum) {
+            String objectName, Class<T> counterEnum) {
         if (!COUNTER_INDEX_MAP.containsKey(objectName)) {
-            LOG.debug("Couldn't find counter index of {}.", objectName);
+            LOG.debug("Couldn't find counter index of {}." + objectName);
             return null;
         }
         int counterIndex = COUNTER_INDEX_MAP.get(objectName);
@@ -218,7 +219,7 @@ import java.util.*;
             T key = enumConstants[i];
             String counterName = key.getCounter();
             if (!COUNTER_INDEX_MAP.containsKey(counterName)) {
-                LOG.debug("Couldn't find counter index of {}.", counterName);
+                LOG.debug("Couldn't find counter index of {}." + counterName);
                 return null;
             }
             indexMap.put(key, COUNTER_INDEX_MAP.get(counterName));
@@ -244,10 +245,10 @@ import java.util.*;
         IntByReference lpcbData = new IntByReference(bufferSize);
         Memory pPerfData = new Memory(bufferSize);
         int ret =
-            Advapi32.INSTANCE.RegQueryValueEx(WinReg.HKEY_PERFORMANCE_DATA, objectIndexStr, 0, null,
-                pPerfData, lpcbData);
+                Advapi32.INSTANCE.RegQueryValueEx(WinReg.HKEY_PERFORMANCE_DATA, objectIndexStr, 0, null,
+                        pPerfData, lpcbData);
         if (ret != WinError.ERROR_SUCCESS && ret != WinError.ERROR_MORE_DATA) {
-            LOG.error("Error reading performance data from registry for {}.", objectName);
+            LOG.error("Error reading performance data from registry for {}." + objectName);
             return null;
         }
         // Grow buffer as needed to fit the data
@@ -256,7 +257,7 @@ import java.util.*;
             lpcbData.setValue(bufferSize);
             pPerfData = new Memory(bufferSize);
             ret = Advapi32.INSTANCE.RegQueryValueEx(WinReg.HKEY_PERFORMANCE_DATA, objectIndexStr, 0,
-                null, pPerfData, lpcbData);
+                    null, pPerfData, lpcbData);
         }
         return pPerfData;
     }
@@ -278,14 +279,14 @@ import java.util.*;
         HashMap<String, Integer> indexMap = new HashMap<>();
         try {
             String[] counterText = Advapi32Util.registryGetStringArray(WinReg.HKEY_LOCAL_MACHINE,
-                HKEY_PERFORMANCE_TEXT, COUNTER);
+                    HKEY_PERFORMANCE_TEXT, COUNTER);
             for (int i = 1; i < counterText.length; i += 2) {
                 indexMap.putIfAbsent(counterText[i], Integer.parseInt(counterText[i - 1]));
             }
         } catch (Win32Exception we) {
             LOG.error(
-                "Unable to locate English counter names in registry Perflib 009. Counters may need to be rebuilt: ",
-                we);
+                    "Unable to locate English counter names in registry Perflib 009. Counters may need to be rebuilt: ",
+                    we);
         } catch (NumberFormatException nfe) {
             // Unexpected to ever get this, but handling it anyway
             LOG.error("Unable to parse English counter names in registry Perflib 009.");

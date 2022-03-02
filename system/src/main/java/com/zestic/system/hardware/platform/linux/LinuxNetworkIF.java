@@ -26,10 +26,10 @@ package com.zestic.system.hardware.platform.linux;
 import com.sun.jna.platform.linux.Udev;
 import com.sun.jna.platform.linux.Udev.UdevContext;
 import com.sun.jna.platform.linux.Udev.UdevDevice;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.NetworkIF;
 import com.zestic.system.hardware.common.AbstractNetworkIF;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.FileUtil;
 import com.zestic.system.util.Util;
 
@@ -41,9 +41,10 @@ import java.util.List;
 /*
  * LinuxNetworks class.
  */
-@ThreadSafe public final class LinuxNetworkIF extends AbstractNetworkIF {
+@ThreadSafe
+public final class LinuxNetworkIF extends AbstractNetworkIF {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private int ifType;
     private boolean connectorPresent;
@@ -104,7 +105,7 @@ import java.util.List;
             try {
                 ifList.add(new LinuxNetworkIF(ni));
             } catch (InstantiationException e) {
-                LOG.debug("Network Interface Instantiation failed: {}", e.getMessage());
+                LOG.debug("Network Interface Instantiation failed: {}" + e.getMessage());
             }
         }
         return ifList;
@@ -130,63 +131,78 @@ import java.util.List;
         }
     }
 
-    @Override public int getIfType() {
+    @Override
+    public int getIfType() {
         return this.ifType;
     }
 
-    @Override public boolean isConnectorPresent() {
+    @Override
+    public boolean isConnectorPresent() {
         return this.connectorPresent;
     }
 
-    @Override public long getBytesRecv() {
+    @Override
+    public long getBytesRecv() {
         return this.bytesRecv;
     }
 
-    @Override public long getBytesSent() {
+    @Override
+    public long getBytesSent() {
         return this.bytesSent;
     }
 
-    @Override public long getPacketsRecv() {
+    @Override
+    public long getPacketsRecv() {
         return this.packetsRecv;
     }
 
-    @Override public long getPacketsSent() {
+    @Override
+    public long getPacketsSent() {
         return this.packetsSent;
     }
 
-    @Override public long getInErrors() {
+    @Override
+    public long getInErrors() {
         return this.inErrors;
     }
 
-    @Override public long getOutErrors() {
+    @Override
+    public long getOutErrors() {
         return this.outErrors;
     }
 
-    @Override public long getInDrops() {
+    @Override
+    public long getInDrops() {
         return this.inDrops;
     }
 
-    @Override public long getCollisions() {
+    @Override
+    public long getCollisions() {
         return this.collisions;
     }
 
-    @Override public long getSpeed() {
+    @Override
+    public long getSpeed() {
         return this.speed;
     }
 
-    @Override public long getTimeStamp() {
+    @Override
+    public long getTimeStamp() {
         return this.timeStamp;
     }
 
-    @Override public String getIfAlias() {
+    @Override
+    public String getIfAlias() {
         return ifAlias;
     }
 
-    @Override public NetworkIF.IfOperStatus getIfOperStatus() {
+    @Override
+    public NetworkIF.IfOperStatus getIfOperStatus() {
         return ifOperStatus;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         try {
             File ifDir = new File(String.format("/sys/class/net/%s/statistics", getName()));
             if (!ifDir.isDirectory()) {

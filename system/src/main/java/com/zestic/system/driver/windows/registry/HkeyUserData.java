@@ -30,8 +30,8 @@ import com.sun.jna.platform.win32.Win32Exception;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.WinReg;
 import com.sun.jna.platform.win32.WinReg.HKEY;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.os.OSSession;
 
 import java.util.ArrayList;
@@ -40,7 +40,8 @@ import java.util.List;
 /*
  * Utility to read session data from HKEY_USERS
  */
-@ThreadSafe public final class HkeyUserData {
+@ThreadSafe
+public final class HkeyUserData {
 
     private static final String PATH_DELIMITER = "\\";
     private static final String DEFAULT_DEVICE = "Console";
@@ -48,7 +49,7 @@ import java.util.List;
     private static final String CLIENTNAME = "CLIENTNAME";
     private static final String SESSIONNAME = "SESSIONNAME";
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private HkeyUserData() {
     }
@@ -66,8 +67,8 @@ import java.util.List;
                     String keyPath = sidKey + PATH_DELIMITER + VOLATILE_ENV_SUBKEY;
                     if (Advapi32Util.registryKeyExists(WinReg.HKEY_USERS, keyPath)) {
                         HKEY hKey =
-                            Advapi32Util.registryGetKey(WinReg.HKEY_USERS, keyPath, WinNT.KEY_READ)
-                                .getValue();
+                                Advapi32Util.registryGetKey(WinReg.HKEY_USERS, keyPath, WinNT.KEY_READ)
+                                        .getValue();
                         // InfoKey write time is user login time
                         InfoKey info = Advapi32Util.registryQueryInfoKey(hKey, 0);
                         loginTime = info.lpftLastWriteTime.toTime();
@@ -75,19 +76,19 @@ import java.util.List;
                             String subKeyPath = keyPath + PATH_DELIMITER + subKey;
                             // Check for session and client name
                             if (Advapi32Util.registryValueExists(WinReg.HKEY_USERS, subKeyPath,
-                                SESSIONNAME)) {
+                                    SESSIONNAME)) {
                                 String session =
-                                    Advapi32Util.registryGetStringValue(WinReg.HKEY_USERS,
-                                        subKeyPath, SESSIONNAME);
+                                        Advapi32Util.registryGetStringValue(WinReg.HKEY_USERS,
+                                                subKeyPath, SESSIONNAME);
                                 if (!session.isEmpty()) {
                                     device = session;
                                 }
                             }
                             if (Advapi32Util.registryValueExists(WinReg.HKEY_USERS, subKeyPath,
-                                CLIENTNAME)) {
+                                    CLIENTNAME)) {
                                 String client =
-                                    Advapi32Util.registryGetStringValue(WinReg.HKEY_USERS,
-                                        subKeyPath, CLIENTNAME);
+                                        Advapi32Util.registryGetStringValue(WinReg.HKEY_USERS,
+                                                subKeyPath, CLIENTNAME);
                                 if (!client.isEmpty() && !DEFAULT_DEVICE.equals(client)) {
                                     host = client;
                                 }
@@ -97,7 +98,7 @@ import java.util.List;
                     }
                     sessions.add(new OSSession(name, device, loginTime, host));
                 } catch (Win32Exception ex) {
-                    LOG.warn("Error querying SID {} from registry: {}", sidKey, ex.getMessage());
+                    LOG.warn("Error querying SID {" + sidKey + "} from registry: {" + ex.getMessage() + "}");
                 }
             }
         }

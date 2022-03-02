@@ -23,9 +23,9 @@
  */
 package com.zestic.system.hardware.common;
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.NetworkIF;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.Constants;
 import com.zestic.system.util.FileUtil;
 import com.zestic.system.util.FormatUtil;
@@ -44,14 +44,15 @@ import static com.zestic.system.util.Memoizer.memoize;
 /*
  * Network interfaces implementation.
  */
-@ThreadSafe public abstract class AbstractNetworkIF implements NetworkIF {
+@ThreadSafe
+public abstract class AbstractNetworkIF implements NetworkIF {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final String OSHI_VM_MAC_ADDR_PROPERTIES =
-        "com.zestic.system.vmmacaddr.properties";
+            "com.zestic.system.vmmacaddr.properties";
     private final Supplier<Properties> vmMacAddrProps =
-        memoize(AbstractNetworkIF::queryVmMacAddrProps);
+            memoize(AbstractNetworkIF::queryVmMacAddrProps);
     private NetworkInterface networkInterface;
     private String name;
     private String displayName;
@@ -84,7 +85,7 @@ import static com.zestic.system.util.Memoizer.memoize;
      * @throws InstantiationException If a socket exception prevents access to the backing interface.
      */
     protected AbstractNetworkIF(NetworkInterface netint, String displayName)
-        throws InstantiationException {
+            throws InstantiationException {
         this.networkInterface = netint;
         try {
             this.name = networkInterface.getName();
@@ -141,10 +142,10 @@ import static com.zestic.system.util.Memoizer.memoize;
         List<NetworkInterface> interfaces = getAllNetworkInterfaces();
 
         return includeLocalInterfaces ?
-            interfaces :
-            getAllNetworkInterfaces().stream()
-                .filter(networkInterface1 -> !isLocalInterface(networkInterface1))
-                .collect(Collectors.toList());
+                interfaces :
+                getAllNetworkInterfaces().stream()
+                        .filter(networkInterface1 -> !isLocalInterface(networkInterface1))
+                        .collect(Collectors.toList());
     }
 
     /*
@@ -157,7 +158,7 @@ import static com.zestic.system.util.Memoizer.memoize;
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             return interfaces == null ? Collections.emptyList() : Collections.list(interfaces);
         } catch (SocketException ex) {
-            LOG.error("Socket exception when retrieving interfaces: {}", ex.getMessage());
+            LOG.error("Socket exception when retrieving interfaces: {"+ex.getMessage()+"}");
         }
         return Collections.emptyList();
     }
@@ -167,8 +168,7 @@ import static com.zestic.system.util.Memoizer.memoize;
             // getHardwareAddress also checks for loopback
             return networkInterface.getHardwareAddress() == null;
         } catch (SocketException e) {
-            LOG.error("Socket exception when retrieving interface information for {}: {}",
-                networkInterface, e.getMessage());
+            LOG.error("Socket exception when retrieving interface information for {"+networkInterface+"}: {"+e.getMessage()+"}");
         }
         return false;
     }
@@ -177,52 +177,64 @@ import static com.zestic.system.util.Memoizer.memoize;
         return FileUtil.readPropertiesFromFilename(OSHI_VM_MAC_ADDR_PROPERTIES);
     }
 
-    @Override public NetworkInterface queryNetworkInterface() {
+    @Override
+    public NetworkInterface queryNetworkInterface() {
         return this.networkInterface;
     }
 
-    @Override public String getName() {
+    @Override
+    public String getName() {
         return this.name;
     }
 
-    @Override public int getIndex() {
+    @Override
+    public int getIndex() {
         return this.index;
     }
 
-    @Override public String getDisplayName() {
+    @Override
+    public String getDisplayName() {
         return this.displayName;
     }
 
-    @Override public long getMTU() {
+    @Override
+    public long getMTU() {
         return this.mtu;
     }
 
-    @Override public String getMacaddr() {
+    @Override
+    public String getMacaddr() {
         return this.mac;
     }
 
-    @Override public String[] getIPv4addr() {
+    @Override
+    public String[] getIPv4addr() {
         return Arrays.copyOf(this.ipv4, this.ipv4.length);
     }
 
-    @Override public Short[] getSubnetMasks() {
+    @Override
+    public Short[] getSubnetMasks() {
         return Arrays.copyOf(this.subnetMasks, this.subnetMasks.length);
     }
 
-    @Override public String[] getIPv6addr() {
+    @Override
+    public String[] getIPv6addr() {
         return Arrays.copyOf(this.ipv6, this.ipv6.length);
     }
 
-    @Override public Short[] getPrefixLengths() {
+    @Override
+    public Short[] getPrefixLengths() {
         return Arrays.copyOf(this.prefixLengths, this.prefixLengths.length);
     }
 
-    @Override public boolean isKnownVmMacAddr() {
+    @Override
+    public boolean isKnownVmMacAddr() {
         String oui = getMacaddr().length() > 7 ? getMacaddr().substring(0, 8) : getMacaddr();
         return this.vmMacAddrProps.get().containsKey(oui.toUpperCase());
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Name: ").append(getName());
         if (!getName().equals(getDisplayName())) {
@@ -234,7 +246,7 @@ import static com.zestic.system.util.Memoizer.memoize;
         sb.append("\n");
         sb.append("  MAC Address: ").append(getMacaddr()).append("\n");
         sb.append("  MTU: ").append(getMTU()).append(", ").append("Speed: ").append(getSpeed())
-            .append("\n");
+                .append("\n");
         String[] ipv4withmask = getIPv4addr();
         if (this.ipv4.length == this.subnetMasks.length) {
             for (int i = 0; i < this.subnetMasks.length; i++) {
@@ -250,11 +262,11 @@ import static com.zestic.system.util.Memoizer.memoize;
         }
         sb.append("  IPv6: ").append(Arrays.toString(ipv6withprefixlength)).append("\n");
         sb.append("  Traffic: received ").append(getPacketsRecv()).append(" packets/")
-            .append(FormatUtil.formatBytes(getBytesRecv())).append(" (" + getInErrors() + " err, ")
-            .append(getInDrops() + " drop);");
+                .append(FormatUtil.formatBytes(getBytesRecv())).append(" (" + getInErrors() + " err, ")
+                .append(getInDrops() + " drop);");
         sb.append(" transmitted ").append(getPacketsSent()).append(" packets/")
-            .append(FormatUtil.formatBytes(getBytesSent())).append(" (" + getOutErrors() + " err, ")
-            .append(getCollisions() + " coll);");
+                .append(FormatUtil.formatBytes(getBytesSent())).append(" (" + getOutErrors() + " err, ")
+                .append(getCollisions() + " coll);");
         return sb.toString();
     }
 }

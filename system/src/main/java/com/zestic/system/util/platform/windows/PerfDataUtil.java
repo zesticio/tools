@@ -30,24 +30,25 @@ import com.sun.jna.platform.win32.WinDef.DWORD;
 import com.sun.jna.platform.win32.WinDef.DWORDByReference;
 import com.sun.jna.platform.win32.WinDef.LONGLONGByReference;
 import com.sun.jna.platform.win32.WinNT.HANDLEByReference;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.Immutable;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.util.FormatUtil;
 import com.zestic.system.util.ParseUtil;
 import com.zestic.system.util.Util;
+import org.apache.log4j.Priority;
 
 /*
  * Helper class to centralize the boilerplate portions of PDH counter setup and
  * allow applications to easily add, query, and remove counters.
  */
-@ThreadSafe public final class PerfDataUtil {
+@ThreadSafe
+public final class PerfDataUtil {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
 
     private static final DWORD_PTR PZERO = new DWORD_PTR(0);
     private static final DWORDByReference PDH_FMT_RAW =
-        new DWORDByReference(new DWORD(Pdh.PDH_FMT_RAW));
+            new DWORDByReference(new DWORD(Pdh.PDH_FMT_RAW));
     private static final Pdh PDH = Pdh.INSTANCE;
 
     private static final boolean IS_VISTA_OR_GREATER = VersionHelpers.IsWindowsVistaOrGreater();
@@ -77,28 +78,28 @@ import com.zestic.system.util.Util;
     public static long updateQueryTimestamp(WinNT.HANDLEByReference query) {
         LONGLONGByReference pllTimeStamp = new LONGLONGByReference();
         int ret = IS_VISTA_OR_GREATER ?
-            PDH.PdhCollectQueryDataWithTime(query.getValue(), pllTimeStamp) :
-            PDH.PdhCollectQueryData(query.getValue());
+                PDH.PdhCollectQueryDataWithTime(query.getValue(), pllTimeStamp) :
+                PDH.PdhCollectQueryData(query.getValue());
         // Due to race condition, initial update may fail with PDH_NO_DATA.
         int retries = 0;
         while (ret == PdhMsg.PDH_NO_DATA && retries++ < 3) {
             // Exponential fallback.
             Util.sleep(1 << retries);
             ret = IS_VISTA_OR_GREATER ?
-                PDH.PdhCollectQueryDataWithTime(query.getValue(), pllTimeStamp) :
-                PDH.PdhCollectQueryData(query.getValue());
+                    PDH.PdhCollectQueryDataWithTime(query.getValue(), pllTimeStamp) :
+                    PDH.PdhCollectQueryData(query.getValue());
         }
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Failed to update counter. Error code: {}",
-                    String.format(FormatUtil.formatError(ret)));
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.warn("Failed to update counter. Error code: {}" +
+                        String.format(FormatUtil.formatError(ret)));
             }
             return 0L;
         }
         // Perf Counter timestamp is in local time
         return IS_VISTA_OR_GREATER ?
-            ParseUtil.filetimeToUtcMs(pllTimeStamp.getValue().longValue(), true) :
-            System.currentTimeMillis();
+                ParseUtil.filetimeToUtcMs(pllTimeStamp.getValue().longValue(), true) :
+                System.currentTimeMillis();
     }
 
     /*
@@ -110,9 +111,9 @@ import com.zestic.system.util.Util;
     public static boolean openQuery(HANDLEByReference q) {
         int ret = PDH.PdhOpenQuery(null, PZERO, q);
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Failed to open PDH Query. Error code: {}",
-                    String.format(FormatUtil.formatError(ret)));
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.error("Failed to open PDH Query. Error code: {}" +
+                        String.format(FormatUtil.formatError(ret)));
             }
             return false;
         }
@@ -140,9 +141,9 @@ import com.zestic.system.util.Util;
         PDH_RAW_COUNTER counterValue = new PDH_RAW_COUNTER();
         int ret = PDH.PdhGetRawCounterValue(counter.getValue(), PDH_FMT_RAW, counterValue);
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Failed to get counter. Error code: {}",
-                    String.format(FormatUtil.formatError(ret)));
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.warn("Failed to get counter. Error code: {}" +
+                        String.format(FormatUtil.formatError(ret)));
             }
             return ret;
         }
@@ -159,14 +160,13 @@ import com.zestic.system.util.Util;
      * @return true if successful
      */
     public static boolean addCounter(WinNT.HANDLEByReference query, String path,
-        WinNT.HANDLEByReference p) {
+                                     WinNT.HANDLEByReference p) {
         int ret = IS_VISTA_OR_GREATER ?
-            PDH.PdhAddEnglishCounter(query.getValue(), path, PZERO, p) :
-            PDH.PdhAddCounter(query.getValue(), path, PZERO, p);
+                PDH.PdhAddEnglishCounter(query.getValue(), path, PZERO, p) :
+                PDH.PdhAddCounter(query.getValue(), path, PZERO, p);
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Failed to add PDH Counter: {}, Error code: {}", path,
-                    String.format(FormatUtil.formatError(ret)));
+            if (LOG.isEnabledFor(Priority.ERROR)) {
+                LOG.warn("Failed to add PDH Counter: {}, Error code: {}" + path + " " + String.format(FormatUtil.formatError(ret)));
             }
             return false;
         }
@@ -187,7 +187,8 @@ import com.zestic.system.util.Util;
     /*
      * Encapsulates the three string components of a performance counter
      */
-    @Immutable public static class PerfCounter {
+    @Immutable
+    public static class PerfCounter {
         private String object;
         private String instance;
         private String counter;

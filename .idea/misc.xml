@@ -11,6 +11,7 @@
     <option name="ignoredFiles">
       <set>
         <option value="$PROJECT_DIR$/excel/pom.xml" />
+        <option value="$PROJECT_DIR$/log/pom.xml" />
         <option value="$PROJECT_DIR$/utils/pom.xml" />
       </set>
     </option>

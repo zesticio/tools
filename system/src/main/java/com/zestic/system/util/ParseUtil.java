@@ -24,7 +24,6 @@
 package com.zestic.system.util;
 
 
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.util.tuples.Pair;
 import com.zestic.system.util.tuples.Triplet;
@@ -46,7 +45,8 @@ import java.util.regex.Pattern;
 /*
  * String parsing utility.
  */
-@ThreadSafe public final class ParseUtil {
+@ThreadSafe
+public final class ParseUtil {
 
     /*
      * Constant <code>whitespacesColonWhitespace</code>
@@ -68,7 +68,7 @@ import java.util.regex.Pattern;
      * Constant <code>forwardSlash</code>
      */
     public static final Pattern slash = Pattern.compile("\\/");
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(ParseUtil.class);
     private static final String DEFAULT_LOG_MSG = "{} didn't parse. Returning default. {}";
     /*
      * Used for matching
@@ -84,17 +84,17 @@ import java.util.regex.Pattern;
      * Pattern for [dd-[hh:[mm:[ss[.sss]]]]]
      */
     private static final Pattern DHMS =
-        Pattern.compile("(?:(\\d+)-)?(?:(\\d+):)??(?:(\\d+):)?(\\d+)(?:\\.(\\d+))?");
+            Pattern.compile("(?:(\\d+)-)?(?:(\\d+):)??(?:(\\d+):)?(\\d+)(?:\\.(\\d+))?");
     /*
      * Pattern for a UUID
      */
     private static final Pattern UUID_PATTERN =
-        Pattern.compile(".*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}).*");
+            Pattern.compile(".*([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}).*");
     /*
      * Pattern for Windows DeviceID vendor and product ID and serial
      */
     private static final Pattern VENDOR_PRODUCT_ID_SERIAL =
-        Pattern.compile(".*(?:VID|VEN)_(\\p{XDigit}{4})&(?:PID|DEV)_(\\p{XDigit}{4})(.*)\\\\(.*)");
+            Pattern.compile(".*(?:VID|VEN)_(\\p{XDigit}{4})&(?:PID|DEV)_(\\p{XDigit}{4})(.*)\\\\(.*)");
     /*
      * Pattern for Linux lspci machine readable
      */
@@ -103,7 +103,7 @@ import java.util.regex.Pattern;
      * Pattern for Linux lspci memory
      */
     private static final Pattern LSPCI_MEMORY_SIZE =
-        Pattern.compile(".+\\s\\[size=(\\d+)([kKMGT])\\]");
+            Pattern.compile(".+\\s\\[size=(\\d+)([kKMGT])\\]");
     /*
      * Hertz related variables.
      */
@@ -118,16 +118,16 @@ import java.util.regex.Pattern;
     // Constants to convert to UTC millis
     private static final long EPOCH_DIFF = 11_644_473_600_000L;
     private static final int TZ_OFFSET =
-        TimeZone.getDefault().getOffset(System.currentTimeMillis());
+            TimeZone.getDefault().getOffset(System.currentTimeMillis());
     // Fast decimal exponentiation: pow(10,y) --> POWERS_OF_10[y]
     private static final long[] POWERS_OF_TEN =
-        {1L, 10L, 100L, 1_000L, 10_000L, 100_000L, 1_000_000L, 10_000_000L, 100_000_000L,
-            1_000_000_000L, 10_000_000_000L, 100_000_000_000L, 1_000_000_000_000L,
-            10_000_000_000_000L, 100_000_000_000_000L, 1_000_000_000_000_000L,
-            10_000_000_000_000_000L, 100_000_000_000_000_000L, 1_000_000_000_000_000_000L};
+            {1L, 10L, 100L, 1_000L, 10_000L, 100_000L, 1_000_000L, 10_000_000L, 100_000_000L,
+                    1_000_000_000L, 10_000_000_000L, 100_000_000_000L, 1_000_000_000_000L,
+                    10_000_000_000_000L, 100_000_000_000_000L, 1_000_000_000_000_000L,
+                    10_000_000_000_000_000L, 100_000_000_000_000_000L, 1_000_000_000_000_000_000L};
     // Format returned by WMI for DateTime
     private static final DateTimeFormatter CIM_FORMAT =
-        DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSSSSSZZZZZ", Locale.US);
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmss.SSSSSSZZZZZ", Locale.US);
 
     static {
         multipliers = new HashMap<>();
@@ -153,7 +153,7 @@ import java.util.regex.Pattern;
         if (matcher.find() && matcher.groupCount() == 3) {
             // Regexp enforces #(.#) format so no test for NFE required
             double value =
-                Double.valueOf(matcher.group(1)) * multipliers.getOrDefault(matcher.group(3), -1L);
+                    Double.valueOf(matcher.group(1)) * multipliers.getOrDefault(matcher.group(3), -1L);
             if (value >= 0d) {
                 return (long) value;
             }
@@ -177,7 +177,7 @@ import java.util.regex.Pattern;
                 return Integer.parseInt(ls);
             }
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+            LOG.trace(DEFAULT_LOG_MSG + s + " " + e);
             return i;
         }
     }
@@ -198,7 +198,7 @@ import java.util.regex.Pattern;
                 return Long.parseLong(ls);
             }
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+            LOG.trace(DEFAULT_LOG_MSG + s + " " + e);
             return li;
         }
     }
@@ -214,7 +214,7 @@ import java.util.regex.Pattern;
         try {
             return Double.parseDouble(parseLastString(s));
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+            LOG.trace(DEFAULT_LOG_MSG + s + " " + e);
             return d;
         }
     }
@@ -259,13 +259,13 @@ import java.util.regex.Pattern;
         int len = digits.length();
         // Check if string is valid hex
         if (!VALID_HEX.matcher(digits).matches() || (len & 0x1) != 0) {
-            LOG.warn("Invalid hexadecimal string: {}", digits);
+            LOG.warn("Invalid hexadecimal string: {}" + digits);
             return new byte[0];
         }
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) (Character.digit(digits.charAt(i), 16) << 4 | Character.digit(
-                digits.charAt(i + 1), 16));
+                    digits.charAt(i + 1), 16));
         }
         return data;
     }
@@ -428,7 +428,7 @@ import java.util.regex.Pattern;
                 sb.append((char) charAsInt);
             }
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, hexString, e);
+//            LOG.trace(DEFAULT_LOG_MSG, hexString, e);
             // Hex failed to parse, just return the existing string
             return hexString;
         }
@@ -446,7 +446,7 @@ import java.util.regex.Pattern;
         try {
             return Integer.parseInt(s);
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+//            LOG.trace(DEFAULT_LOG_MSG, s, e);
             return defaultInt;
         }
     }
@@ -462,7 +462,7 @@ import java.util.regex.Pattern;
         try {
             return Long.parseLong(s);
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+//            LOG.trace(DEFAULT_LOG_MSG, s, e);
             return defaultLong;
         }
     }
@@ -480,7 +480,7 @@ import java.util.regex.Pattern;
         try {
             return new BigInteger(s).longValue();
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+//            LOG.trace(DEFAULT_LOG_MSG, s, e);
             return defaultLong;
         }
     }
@@ -496,7 +496,7 @@ import java.util.regex.Pattern;
         try {
             return Double.parseDouble(s);
         } catch (NumberFormatException e) {
-            LOG.trace(DEFAULT_LOG_MSG, s, e);
+//            LOG.trace(DEFAULT_LOG_MSG, s, e);
             return defaultDouble;
         }
     }
@@ -670,7 +670,7 @@ import java.util.regex.Pattern;
      * will be an array of zeros.
      */
     public static long[] parseStringToLongArray(String s, int[] indices, int length,
-        char delimiter) {
+                                                char delimiter) {
         long[] parsed = new long[indices.length];
         // Iterate from right-to-left of String
         // Fill right to left of result array using index array
@@ -705,7 +705,7 @@ import java.util.regex.Pattern;
                 delimCurrent = false;
             } else if (c >= '0' && c <= '9' && !dashSeen) {
                 if (power > 18
-                    || power == 17 && c == '9' && parsed[parsedIndex] > 223_372_036_854_775_807L) {
+                        || power == 17 && c == '9' && parsed[parsedIndex] > 223_372_036_854_775_807L) {
                     parsed[parsedIndex] = Long.MAX_VALUE;
                 } else {
                     parsed[parsedIndex] += (c - '0') * ParseUtil.POWERS_OF_TEN[power++];
@@ -720,8 +720,7 @@ import java.util.regex.Pattern;
                 // error on everything else
                 if (numberFound) {
                     if (!noLog(s)) {
-                        LOG.error("Illegal character parsing string '{}' to long array: {}", s,
-                            s.charAt(charIndex));
+                        LOG.error("Illegal character parsing string '{" + s + "}' to long array: {" + s.charAt(charIndex) + "}");
                     }
                     return new long[indices.length];
                 }
@@ -731,8 +730,7 @@ import java.util.regex.Pattern;
         }
         if (parsedIndex > 0) {
             if (!noLog(s)) {
-                LOG.error("Not enough fields in string '{}' parsing to long array: {}", s,
-                    indices.length - parsedIndex);
+                LOG.error("Not enough fields in string '{" + s + "}' parsing to long array: {" + (indices.length - parsedIndex) + "}");
             }
             return new long[indices.length];
         }
@@ -849,7 +847,7 @@ import java.util.regex.Pattern;
         try {
             // Date is MM-DD-YYYY, convert to YYYY-MM-DD
             return String.format("%s-%s-%s", dateString.substring(6, 10),
-                dateString.substring(0, 2), dateString.substring(3, 5));
+                    dateString.substring(0, 2), dateString.substring(3, 5));
         } catch (StringIndexOutOfBoundsException e) {
             return dateString;
         }
@@ -873,11 +871,11 @@ import java.util.regex.Pattern;
             // modified to 20160513072950.782000-07:00 which can be parsed
             LocalTime offsetAsLocalTime = LocalTime.MIDNIGHT.plusMinutes(tzInMinutes);
             return OffsetDateTime.parse(cimDateTime.substring(0, 22) + offsetAsLocalTime.format(
-                DateTimeFormatter.ISO_LOCAL_TIME), ParseUtil.CIM_FORMAT);
+                    DateTimeFormatter.ISO_LOCAL_TIME), ParseUtil.CIM_FORMAT);
         } catch (IndexOutOfBoundsException // if cimDate not 22+ chars
-            | NumberFormatException // if TZ minutes doesn't parse
-            | DateTimeParseException e) {
-            LOG.trace("Unable to parse {} to CIM DateTime.", cimDateTime);
+                | NumberFormatException // if TZ minutes doesn't parse
+                | DateTimeParseException e) {
+            LOG.trace("Unable to parse {} to CIM DateTime." + cimDateTime);
             return Constants.UNIX_EPOCH;
         }
     }
@@ -913,7 +911,7 @@ import java.util.regex.Pattern;
             mem[0] = matcher.group(1);
             mem[1] = matcher.group(3);
         } else {
-            mem = new String[] {count};
+            mem = new String[]{count};
         }
 
         double number = ParseUtil.parseDoubleOrDefault(mem[0], 0L);
@@ -990,14 +988,14 @@ import java.util.regex.Pattern;
      * {@code null} otherwise
      */
     public static Triplet<String, String, String> parseDeviceIdToVendorProductSerial(
-        String deviceId) {
+            String deviceId) {
         Matcher m = VENDOR_PRODUCT_ID_SERIAL.matcher(deviceId);
         if (m.matches()) {
             String vendorId = "0x" + m.group(1).toLowerCase();
             String productId = "0x" + m.group(2).toLowerCase();
             String serial = m.group(4);
             return new Triplet<>(vendorId, productId,
-                !m.group(3).isEmpty() || serial.contains("&") ? "" : serial);
+                    !m.group(3).isEmpty() || serial.contains("&") ? "" : serial);
         }
         return null;
     }
@@ -1024,7 +1022,7 @@ import java.util.regex.Pattern;
                         // Parse the hex strings
                         bytes += Long.parseLong(mem[1], 16) - Long.parseLong(mem[0], 16) + 1;
                     } catch (NumberFormatException e) {
-                        LOG.trace(DEFAULT_LOG_MSG, r, e);
+//                        LOG.trace(DEFAULT_LOG_MSG, r, e);
                     }
                 }
             }
@@ -1161,11 +1159,11 @@ import java.util.regex.Pattern;
         }
         // Parse all 16 bytes
         byte[] ipv6 =
-            ByteBuffer.allocate(16).putInt(utAddrV6[0]).putInt(utAddrV6[1]).putInt(utAddrV6[2])
-                .putInt(utAddrV6[3]).array();
+                ByteBuffer.allocate(16).putInt(utAddrV6[0]).putInt(utAddrV6[1]).putInt(utAddrV6[2])
+                        .putInt(utAddrV6[3]).array();
         try {
             return InetAddress.getByAddress(ipv6).getHostAddress()
-                .replaceAll("((?:(?:^|:)0+\\b){2,}):?(?!\\S*\\b\\1:0+\\b)(\\S*)", "::$2");
+                    .replaceAll("((?:(?:^|:)0+\\b){2,}):?(?!\\S*\\b\\1:0+\\b)(\\S*)", "::$2");
         } catch (UnknownHostException e) {
             // Shouldn't happen with length 4 or 16
             return Constants.UNKNOWN;
@@ -1188,7 +1186,7 @@ import java.util.regex.Pattern;
                     return new BigInteger(hexString, 16).intValue();
                 }
             } catch (NumberFormatException e) {
-                LOG.trace(DEFAULT_LOG_MSG, hexString, e);
+//                LOG.trace(DEFAULT_LOG_MSG, hexString, e);
             }
         }
         // Hex failed to parse, just return the default long
@@ -1211,7 +1209,7 @@ import java.util.regex.Pattern;
                     return new BigInteger(hexString, 16).longValue();
                 }
             } catch (NumberFormatException e) {
-                LOG.trace(DEFAULT_LOG_MSG, hexString, e);
+//                LOG.trace(DEFAULT_LOG_MSG, hexString, e);
             }
         }
         // Hex failed to parse, just return the default long
@@ -1348,7 +1346,7 @@ import java.util.regex.Pattern;
      * the String, including excess delimiters.
      */
     public static <K extends Enum<K>> Map<K, String> stringToEnumMap(Class<K> clazz, String values,
-        char delim) {
+                                                                     char delim) {
         EnumMap<K, String> map = new EnumMap<>(clazz);
         int start = 0;
         int len = values.length();

@@ -24,10 +24,10 @@
 package com.zestic.system.hardware.platform.unix.solaris;
 
 import com.sun.jna.platform.unix.solaris.LibKstat.Kstat;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.NetworkIF;
 import com.zestic.system.hardware.common.AbstractNetworkIF;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.platform.unix.solaris.KstatUtil;
 
 import java.net.NetworkInterface;
@@ -37,9 +37,10 @@ import java.util.List;
 /*
  * SolarisNetworks class.
  */
-@ThreadSafe public final class SolarisNetworkIF extends AbstractNetworkIF {
+@ThreadSafe
+public final class SolarisNetworkIF extends AbstractNetworkIF {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private long bytesRecv;
     private long bytesSent;
@@ -69,53 +70,64 @@ import java.util.List;
             try {
                 ifList.add(new SolarisNetworkIF(ni));
             } catch (InstantiationException e) {
-                LOG.debug("Network Interface Instantiation failed: {}", e.getMessage());
+                LOG.debug("Network Interface Instantiation failed: {}" + e.getMessage());
             }
         }
         return ifList;
     }
 
-    @Override public long getBytesRecv() {
+    @Override
+    public long getBytesRecv() {
         return this.bytesRecv;
     }
 
-    @Override public long getBytesSent() {
+    @Override
+    public long getBytesSent() {
         return this.bytesSent;
     }
 
-    @Override public long getPacketsRecv() {
+    @Override
+    public long getPacketsRecv() {
         return this.packetsRecv;
     }
 
-    @Override public long getPacketsSent() {
+    @Override
+    public long getPacketsSent() {
         return this.packetsSent;
     }
 
-    @Override public long getInErrors() {
+    @Override
+    public long getInErrors() {
         return this.inErrors;
     }
 
-    @Override public long getOutErrors() {
+    @Override
+    public long getOutErrors() {
         return this.outErrors;
     }
 
-    @Override public long getInDrops() {
+    @Override
+    public long getInDrops() {
         return this.inDrops;
     }
 
-    @Override public long getCollisions() {
+    @Override
+    public long getCollisions() {
         return this.collisions;
     }
 
-    @Override public long getSpeed() {
+    @Override
+    public long getSpeed() {
         return this.speed;
     }
 
-    @Override public long getTimeStamp() {
+    @Override
+    public long getTimeStamp() {
         return this.timeStamp;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         try (KstatUtil.KstatChain kc = KstatUtil.openChain()) {
             Kstat ksp = KstatUtil.KstatChain.lookup("link", -1, getName());
             if (ksp == null) { // Solaris 10 compatibility

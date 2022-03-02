@@ -29,10 +29,10 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.mac.SystemB;
 import com.sun.jna.platform.mac.SystemB.*;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.driver.mac.ThreadInfo;
 import com.zestic.system.driver.mac.ThreadInfo.ThreadStats;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.common.AbstractOSProcess;
 import com.zestic.system.software.os.OSProcess;
 import com.zestic.system.software.os.OSThread;
@@ -48,9 +48,10 @@ import static com.zestic.system.util.Memoizer.memoize;
 /*
  * OSProcess implementation
  */
-@ThreadSafe public class MacOSProcess extends AbstractOSProcess {
+@ThreadSafe
+public class MacOSProcess extends AbstractOSProcess {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final int ARGMAX = SysctlUtil.sysctl("kern.argmax", 0);
 
@@ -68,7 +69,7 @@ import static com.zestic.system.util.Memoizer.memoize;
 
     private int minorVersion;
     private Supplier<Pair<List<String>, Map<String, String>>> argsEnviron =
-        memoize(this::queryArgsAndEnvironment);
+            memoize(this::queryArgsAndEnvironment);
     private Supplier<String> commandLine = memoize(this::queryCommandLine);
     private String name = "";
     private String path = "";
@@ -101,15 +102,18 @@ import static com.zestic.system.util.Memoizer.memoize;
         updateAttributes();
     }
 
-    @Override public String getName() {
+    @Override
+    public String getName() {
         return this.name;
     }
 
-    @Override public String getPath() {
+    @Override
+    public String getPath() {
         return this.path;
     }
 
-    @Override public String getCommandLine() {
+    @Override
+    public String getCommandLine() {
         return this.commandLine.get();
     }
 
@@ -117,11 +121,13 @@ import static com.zestic.system.util.Memoizer.memoize;
         return String.join(" ", getArguments());
     }
 
-    @Override public List<String> getArguments() {
+    @Override
+    public List<String> getArguments() {
         return argsEnviron.get().getA();
     }
 
-    @Override public Map<String, String> getEnvironmentVariables() {
+    @Override
+    public Map<String, String> getEnvironmentVariables() {
         return argsEnviron.get().getB();
     }
 
@@ -183,45 +189,53 @@ import static com.zestic.system.util.Memoizer.memoize;
             }
         } else {
             LOG.warn(
-                "Failed sysctl call for process arguments (kern.procargs2), process {} may not exist. Error code: {}",
-                getProcessID(), Native.getLastError());
+                    "Failed sysctl call for process arguments (kern.procargs2), process {" + getProcessID() + " } may not exist. Error code: {" + Native.getLastError() + "}");
         }
         return new Pair<>(Collections.unmodifiableList(args), Collections.unmodifiableMap(env));
     }
 
-    @Override public String getCurrentWorkingDirectory() {
+    @Override
+    public String getCurrentWorkingDirectory() {
         return this.currentWorkingDirectory;
     }
 
-    @Override public String getUser() {
+    @Override
+    public String getUser() {
         return this.user;
     }
 
-    @Override public String getUserID() {
+    @Override
+    public String getUserID() {
         return this.userID;
     }
 
-    @Override public String getGroup() {
+    @Override
+    public String getGroup() {
         return this.group;
     }
 
-    @Override public String getGroupID() {
+    @Override
+    public String getGroupID() {
         return this.groupID;
     }
 
-    @Override public OSProcess.State getState() {
+    @Override
+    public OSProcess.State getState() {
         return this.state;
     }
 
-    @Override public int getParentProcessID() {
+    @Override
+    public int getParentProcessID() {
         return this.parentProcessID;
     }
 
-    @Override public int getThreadCount() {
+    @Override
+    public int getThreadCount() {
         return this.threadCount;
     }
 
-    @Override public List<OSThread> getThreadDetails() {
+    @Override
+    public List<OSThread> getThreadDetails() {
         long now = System.currentTimeMillis();
         List<OSThread> details = new ArrayList<>();
         List<ThreadStats> stats = ThreadInfo.queryTaskThreads(getProcessID());
@@ -232,84 +246,100 @@ import static com.zestic.system.util.Memoizer.memoize;
                 start = this.getStartTime();
             }
             details.add(new MacOSThread(getProcessID(), stat.getThreadId(), stat.getState(),
-                stat.getSystemTime(), stat.getUserTime(), start, now - start, stat.getPriority()));
+                    stat.getSystemTime(), stat.getUserTime(), start, now - start, stat.getPriority()));
         }
         return details;
     }
 
-    @Override public int getPriority() {
+    @Override
+    public int getPriority() {
         return this.priority;
     }
 
-    @Override public long getVirtualSize() {
+    @Override
+    public long getVirtualSize() {
         return this.virtualSize;
     }
 
-    @Override public long getResidentSetSize() {
+    @Override
+    public long getResidentSetSize() {
         return this.residentSetSize;
     }
 
-    @Override public long getKernelTime() {
+    @Override
+    public long getKernelTime() {
         return this.kernelTime;
     }
 
-    @Override public long getUserTime() {
+    @Override
+    public long getUserTime() {
         return this.userTime;
     }
 
-    @Override public long getUpTime() {
+    @Override
+    public long getUpTime() {
         return this.upTime;
     }
 
-    @Override public long getStartTime() {
+    @Override
+    public long getStartTime() {
         return this.startTime;
     }
 
-    @Override public long getBytesRead() {
+    @Override
+    public long getBytesRead() {
         return this.bytesRead;
     }
 
-    @Override public long getBytesWritten() {
+    @Override
+    public long getBytesWritten() {
         return this.bytesWritten;
     }
 
-    @Override public long getOpenFiles() {
+    @Override
+    public long getOpenFiles() {
         return this.openFiles;
     }
 
-    @Override public int getBitness() {
+    @Override
+    public int getBitness() {
         return this.bitness;
     }
 
-    @Override public long getAffinityMask() {
+    @Override
+    public long getAffinityMask() {
         // macOS doesn't do affinity. Return a bitmask of the current processors.
         int logicalProcessorCount = SysctlUtil.sysctl("hw.logicalcpu", 1);
         return logicalProcessorCount < 64 ? (1L << logicalProcessorCount) - 1 : -1L;
     }
 
-    @Override public long getMinorFaults() {
+    @Override
+    public long getMinorFaults() {
         return this.minorFaults;
     }
 
-    @Override public long getMajorFaults() {
+    @Override
+    public long getMajorFaults() {
         return this.majorFaults;
     }
 
-    @Override public long getContextSwitches() {
+    @Override
+    public long getContextSwitches() {
         return this.contextSwitches;
     }
 
-    @Override public boolean updateAttributes() {
+    @Override
+    public boolean updateAttributes() {
         long now = System.currentTimeMillis();
         ProcTaskAllInfo taskAllInfo = new ProcTaskAllInfo();
         if (0 > SystemB.INSTANCE.proc_pidinfo(getProcessID(), SystemB.PROC_PIDTASKALLINFO, 0,
-            taskAllInfo, taskAllInfo.size()) || taskAllInfo.ptinfo.pti_threadnum < 1) {
+                taskAllInfo, taskAllInfo.size()) || taskAllInfo.ptinfo.pti_threadnum < 1) {
             this.state = OSProcess.State.INVALID;
             return false;
         }
         Pointer buf = new Memory(SystemB.PROC_PIDPATHINFO_MAXSIZE);
         if (0 < SystemB.INSTANCE.proc_pidpath(getProcessID(), buf,
-            SystemB.PROC_PIDPATHINFO_MAXSIZE)) {
+                SystemB.PROC_PIDPATHINFO_MAXSIZE)) {
             this.path = buf.getString(0).trim();
             // Overwrite name with last part of path
             String[] pathSplit = this.path.split("/");
@@ -363,28 +393,28 @@ import static com.zestic.system.util.Memoizer.memoize;
         this.kernelTime = taskAllInfo.ptinfo.pti_total_system / 1_000_000L;
         this.userTime = taskAllInfo.ptinfo.pti_total_user / 1_000_000L;
         this.startTime =
-            taskAllInfo.pbsd.pbi_start_tvsec * 1000L + taskAllInfo.pbsd.pbi_start_tvusec / 1000L;
+                taskAllInfo.pbsd.pbi_start_tvsec * 1000L + taskAllInfo.pbsd.pbi_start_tvusec / 1000L;
         this.upTime = now - this.startTime;
         this.openFiles = taskAllInfo.pbsd.pbi_nfiles;
         this.bitness = (taskAllInfo.pbsd.pbi_flags & P_LP64) == 0 ? 32 : 64;
         this.majorFaults = taskAllInfo.ptinfo.pti_pageins;
         // testing using getrusage confirms pti_faults includes both major and minor
         this.minorFaults =
-            taskAllInfo.ptinfo.pti_faults - taskAllInfo.ptinfo.pti_pageins; // NOSONAR squid:S2184
+                taskAllInfo.ptinfo.pti_faults - taskAllInfo.ptinfo.pti_pageins; // NOSONAR squid:S2184
         this.contextSwitches = taskAllInfo.ptinfo.pti_csw;
         if (this.minorVersion >= 9) {
             RUsageInfoV2 rUsageInfoV2 = new RUsageInfoV2();
             if (0 == SystemB.INSTANCE.proc_pid_rusage(getProcessID(), SystemB.RUSAGE_INFO_V2,
-                rUsageInfoV2)) {
+                    rUsageInfoV2)) {
                 this.bytesRead = rUsageInfoV2.ri_diskio_bytesread;
                 this.bytesWritten = rUsageInfoV2.ri_diskio_byteswritten;
             }
         }
         VnodePathInfo vpi = new VnodePathInfo();
         if (0 < SystemB.INSTANCE.proc_pidinfo(getProcessID(), SystemB.PROC_PIDVNODEPATHINFO, 0, vpi,
-            vpi.size())) {
+                vpi.size())) {
             this.currentWorkingDirectory =
-                Native.toString(vpi.pvi_cdir.vip_path, StandardCharsets.US_ASCII);
+                    Native.toString(vpi.pvi_cdir.vip_path, StandardCharsets.US_ASCII);
         }
         return true;
     }

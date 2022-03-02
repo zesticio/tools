@@ -29,9 +29,9 @@ import com.sun.jna.platform.mac.SystemB;
 import com.sun.jna.platform.mac.SystemB.IFmsgHdr;
 import com.sun.jna.platform.mac.SystemB.IFmsgHdr2;
 import com.sun.jna.platform.unix.LibCAPI.size_t;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.Immutable;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +39,10 @@ import java.util.Map;
 /*
  * Utility to query NetStat.
  */
-@ThreadSafe public final class NetStat {
+@ThreadSafe
+public final class NetStat {
 
-    private static final Log LOG = Log.get();
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
 
     private static final int CTL_NET = 4;
     private static final int PF_ROUTE = 17;
@@ -95,11 +96,11 @@ import java.util.Map;
                 if2m.read();
                 if (index < 0 || index == if2m.ifm_index) {
                     data.put((int) if2m.ifm_index,
-                        new IFdata(0xff & if2m.ifm_data.ifi_type, if2m.ifm_data.ifi_opackets,
-                            if2m.ifm_data.ifi_ipackets, if2m.ifm_data.ifi_obytes,
-                            if2m.ifm_data.ifi_ibytes, if2m.ifm_data.ifi_oerrors,
-                            if2m.ifm_data.ifi_ierrors, if2m.ifm_data.ifi_collisions,
-                            if2m.ifm_data.ifi_iqdrops, if2m.ifm_data.ifi_baudrate, now));
+                            new IFdata(0xff & if2m.ifm_data.ifi_type, if2m.ifm_data.ifi_opackets,
+                                    if2m.ifm_data.ifi_ipackets, if2m.ifm_data.ifi_obytes,
+                                    if2m.ifm_data.ifi_ibytes, if2m.ifm_data.ifi_oerrors,
+                                    if2m.ifm_data.ifi_ierrors, if2m.ifm_data.ifi_collisions,
+                                    if2m.ifm_data.ifi_iqdrops, if2m.ifm_data.ifi_baudrate, now));
                     if (index >= 0) {
                         return data;
                     }
@@ -112,7 +113,8 @@ import java.util.Map;
     /*
      * Class to encapsulate IF data for method return
      */
-    @Immutable public static class IFdata {
+    @Immutable
+    public static class IFdata {
         private final int ifType;
         private final long oPackets;
         private final long iPackets;
@@ -126,8 +128,8 @@ import java.util.Map;
         private final long timeStamp;
 
         IFdata(int ifType, // NOSONAR squid:S00107
-            long oPackets, long iPackets, long oBytes, long iBytes, long oErrors, long iErrors,
-            long collisions, long iDrops, long speed, long timeStamp) {
+               long oPackets, long iPackets, long oBytes, long iBytes, long oErrors, long iErrors,
+               long collisions, long iDrops, long speed, long timeStamp) {
             this.ifType = ifType;
             this.oPackets = oPackets & 0xffffffffL;
             this.iPackets = iPackets & 0xffffffffL;

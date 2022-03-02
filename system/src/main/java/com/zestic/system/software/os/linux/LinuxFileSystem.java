@@ -25,8 +25,8 @@ package com.zestic.system.software.os.linux;
 
 import com.sun.jna.Native;
 import com.sun.jna.platform.linux.LibC;
-import com.zestic.log.Log;
 import com.zestic.system.annotation.concurrent.ThreadSafe;
+import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.software.common.AbstractFileSystem;
 import com.zestic.system.software.os.OSFileStore;
 import com.zestic.system.util.ExecutingCommand;
@@ -52,25 +52,26 @@ import java.util.Map;
  * implementation specific means of file storage. In Linux, these are found in
  * the /proc/mount filesystem, excluding temporary and kernel mounts.
  */
-@ThreadSafe public class LinuxFileSystem extends AbstractFileSystem {
+@ThreadSafe
+public class LinuxFileSystem extends AbstractFileSystem {
 
     public static final String OSHI_LINUX_FS_PATH_EXCLUDES =
-        "com.zestic.system.os.linux.filesystem.path.excludes";
+            "com.zestic.system.os.linux.filesystem.path.excludes";
     public static final String OSHI_LINUX_FS_PATH_INCLUDES =
-        "com.zestic.system.os.linux.filesystem.path.includes";
+            "com.zestic.system.os.linux.filesystem.path.includes";
     public static final String OSHI_LINUX_FS_VOLUME_EXCLUDES =
-        "com.zestic.system.os.linux.filesystem.volume.excludes";
+            "com.zestic.system.os.linux.filesystem.volume.excludes";
     public static final String OSHI_LINUX_FS_VOLUME_INCLUDES =
-        "com.zestic.system.os.linux.filesystem.volume.includes";
-    private static final Log LOG = Log.get();
+            "com.zestic.system.os.linux.filesystem.volume.includes";
+    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
     private static final List<PathMatcher> FS_PATH_EXCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_PATH_EXCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_PATH_EXCLUDES);
     private static final List<PathMatcher> FS_PATH_INCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_PATH_INCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_PATH_INCLUDES);
     private static final List<PathMatcher> FS_VOLUME_EXCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_VOLUME_EXCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_VOLUME_EXCLUDES);
     private static final List<PathMatcher> FS_VOLUME_INCLUDES =
-        FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_VOLUME_INCLUDES);
+            FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_VOLUME_INCLUDES);
 
     private static final String UNICODE_SPACE = "\\040";
 
@@ -80,7 +81,7 @@ import java.util.Map;
     }
 
     private static List<OSFileStore> getFileStoreMatching(String nameToMatch,
-        Map<String, String> uuidMap, boolean localOnly) {
+                                                          Map<String, String> uuidMap, boolean localOnly) {
         List<OSFileStore> fsList = new ArrayList<>();
 
         Map<String, String> labelMap = queryLabelMap();
@@ -111,8 +112,8 @@ import java.util.Map;
 
             // Skip non-local drives if requested, and exclude pseudo file systems
             if ((localOnly && NETWORK_FS_TYPES.contains(type)) || !path.equals("/") && (
-                PSEUDO_FS_TYPES.contains(type) || FileSystemUtil.isFileStoreExcluded(path, volume,
-                    FS_PATH_INCLUDES, FS_PATH_EXCLUDES, FS_VOLUME_INCLUDES, FS_VOLUME_EXCLUDES))) {
+                    PSEUDO_FS_TYPES.contains(type) || FileSystemUtil.isFileStoreExcluded(path, volume,
+                            FS_PATH_INCLUDES, FS_PATH_EXCLUDES, FS_VOLUME_INCLUDES, FS_VOLUME_EXCLUDES))) {
                 continue;
             }
 
@@ -149,7 +150,7 @@ import java.util.Map;
                         logicalVolume = full.normalize().toString();
                     }
                 } catch (IOException e) {
-                    LOG.warn("Couldn't access symbolic path  {}. {}", link, e.getMessage());
+                    LOG.warn("Couldn't access symbolic path  {" + link + "}. {" + e.getMessage() + "}");
                 }
             }
 
@@ -169,11 +170,10 @@ import java.util.Map;
                     usableSpace = vfsStat.f_bavail.longValue() * vfsStat.f_frsize.longValue();
                     freeSpace = vfsStat.f_bfree.longValue() * vfsStat.f_frsize.longValue();
                 } else {
-                    LOG.warn("Failed to get information to use statvfs. path: {}, Error code: {}",
-                        path, Native.getLastError());
+                    LOG.warn("Failed to get information to use statvfs. path: {" + path + "}, Error code: {" + Native.getLastError() + "}");
                 }
             } catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-                LOG.error("Failed to get file counts from statvfs. {}", e.getMessage());
+                LOG.error("Failed to get file counts from statvfs. {}" + e.getMessage());
             }
             // If native methods failed use JVM methods
             if (totalSpace == 0L) {
@@ -184,9 +184,9 @@ import java.util.Map;
             }
 
             fsList.add(
-                new LinuxOSFileStore(name, volume, labelMap.getOrDefault(path, name), path, options,
-                    uuid, logicalVolume, description, type, freeSpace, usableSpace, totalSpace,
-                    freeInodes, totalInodes));
+                    new LinuxOSFileStore(name, volume, labelMap.getOrDefault(path, name), path, options,
+                            uuid, logicalVolume, description, type, freeSpace, usableSpace, totalSpace,
+                            freeInodes, totalInodes));
         }
         return fsList;
     }
@@ -225,7 +225,8 @@ import java.util.Map;
         return 0L;
     }
 
-    @Override public List<OSFileStore> getFileStores(boolean localOnly) {
+    @Override
+    public List<OSFileStore> getFileStores(boolean localOnly) {
         // Map of volume with device path as key
         Map<String, String> volumeDeviceMap = new HashMap<>();
         File devMapper = new File("/dev/mapper");
@@ -235,8 +236,7 @@ import java.util.Map;
                 try {
                     volumeDeviceMap.put(volume.getCanonicalPath(), volume.getAbsolutePath());
                 } catch (IOException e) {
-                    LOG.error("Couldn't get canonical path for {}. {}", volume.getName(),
-                        e.getMessage());
+                    LOG.error("Couldn't get canonical path for {" + volume.getName() + "}. {" + e.getMessage() + "}");
                 }
             }
         }
@@ -252,11 +252,10 @@ import java.util.Map;
                     uuidMap.put(canonicalPath, uuid.getName().toLowerCase());
                     if (volumeDeviceMap.containsKey(canonicalPath)) {
                         uuidMap.put(volumeDeviceMap.get(canonicalPath),
-                            uuid.getName().toLowerCase());
+                                uuid.getName().toLowerCase());
                     }
                 } catch (IOException e) {
-                    LOG.error("Couldn't get canonical path for {}. {}", uuid.getName(),
-                        e.getMessage());
+                    LOG.error("Couldn't get canonical path for {" + uuid.getName() + "}. {" + e.getMessage() + "}");
                 }
             }
         }
@@ -265,11 +264,13 @@ import java.util.Map;
         return getFileStoreMatching(null, uuidMap, localOnly);
     }
 
-    @Override public long getOpenFileDescriptors() {
+    @Override
+    public long getOpenFileDescriptors() {
         return getFileDescriptors(0);
     }
 
-    @Override public long getMaxFileDescriptors() {
+    @Override
+    public long getMaxFileDescriptors() {
         return getFileDescriptors(2);
     }
 }
