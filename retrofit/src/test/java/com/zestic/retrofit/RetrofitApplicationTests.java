@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import retrofit2.Retrofit;
 
-@EnableRetrofitClient
 @SpringBootTest
+@EnableRetrofitClient
 class RetrofitApplicationTests {
 
     @Autowired
