@@ -13,8 +13,12 @@ public class Result<T> implements Serializable {
 
     private Integer code;
     private String message;
-    private String exception;
     private T data;
+
+    public Result(Integer code, String message) {
+        this.code = code;
+        this.message = message;
+    }
 
     public int getCode() {
         return code;
@@ -34,15 +38,6 @@ public class Result<T> implements Serializable {
         return this;
     }
 
-    public String getException() {
-        return exception;
-    }
-
-    public Result<T> setException(String exceptionMsg) {
-        this.exception = exceptionMsg;
-        return this;
-    }
-
     public T getData() {
         return data;
     }
@@ -57,7 +52,6 @@ public class Result<T> implements Serializable {
         return "Result{" +
                 "code=" + code +
                 ", message='" + message + '\'' +
-                ", exception='" + exception + '\'' +
                 ", data=" + data +
                 '}';
     }

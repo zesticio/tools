@@ -8,16 +8,17 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="settings" />
-        <module name="core" />
         <module name="dispatch" />
+        <module name="jredis" />
+        <module name="crypto" />
+        <module name="core" />
         <module name="system" />
         <module name="retrofit" />
         <module name="common" />
-        <module name="jredis" />
+        <module name="spring-boot-starter-retrofit" />
         <module name="json" />
         <module name="socket" />
         <module name="buffer" />
-        <module name="crypto" />
         <module name="coin" />
       </profile>
     </annotationProcessing>
@@ -43,6 +44,7 @@
       <module name="retrofit" options="-parameters" />
       <module name="settings" options="-parameters" />
       <module name="socket" options="-parameters" />
+      <module name="spring-boot-starter-retrofit" options="-parameters" />
       <module name="system" options="-parameters" />
       <module name="utils" options="" />
     </option>
