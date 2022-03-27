@@ -1,19 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.zestic.buffer;
 
 import java.io.DataInput;
@@ -21,12 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UTFDataFormatException;
 
-
-/*
- * Optimized ByteArrayInputStream that can be used more than once
- *
- * @author <a href="https://www.zestic.io">Deebendu Kumar</a>
- */
 public final class DataByteArrayInputStream extends InputStream implements DataInput {
     private byte[] buf;
     private int pos;
@@ -46,30 +24,14 @@ public final class DataByteArrayInputStream extends InputStream implements DataI
         }
     };
 
-    /*
-     * Creates a <code>StoreByteArrayInputStream</code>.
-     *
-     * @param buf the input buffer.
-     */
     public DataByteArrayInputStream(byte buf[]) {
         restart(buf);
     }
 
-    /*
-     * Creates a <code>StoreByteArrayInputStream</code>.
-     *
-     * @param buffer the input buffer.
-     */
     public DataByteArrayInputStream(Buffer buffer) {
         restart(buffer);
     }
 
-    /*
-     * reset the <code>StoreByteArrayInputStream</code> to use an new
-     * Buffer
-     *
-     * @param buffer
-     */
     public void restart(Buffer buffer) {
         this.buf = buffer.getData();
         this.offset = buffer.getOffset();
@@ -77,11 +39,6 @@ public final class DataByteArrayInputStream extends InputStream implements DataI
         this.length = buffer.getLength();
     }
 
-    /*
-     * re-start the input stream - reusing the current buffer
-     *
-     * @param size
-     */
     public void restart(int size) {
         if (buf == null || buf.length < size) {
             buf = new byte[size];
@@ -90,24 +47,14 @@ public final class DataByteArrayInputStream extends InputStream implements DataI
         this.length = size;
     }
 
-    /*
-     * Creates <code>WireByteArrayInputStream</code> with a minmalist byte
-     * array
-     */
     public DataByteArrayInputStream() {
         this(new byte[0]);
     }
 
-    /*
-     * @return the size
-     */
     public int size() {
         return pos - offset;
     }
 
-    /*
-     * @return the underlying data array
-     */
     public byte[] getRawData() {
         return buf;
     }
@@ -125,12 +72,6 @@ public final class DataByteArrayInputStream extends InputStream implements DataI
         return rc;
     }
 
-    /*
-     * reset the <code>StoreByteArrayInputStream</code> to use an new byte
-     * array
-     *
-     * @param newBuff
-     */
     public void restart(byte[] newBuff) {
         buf = newBuff;
         pos = 0;

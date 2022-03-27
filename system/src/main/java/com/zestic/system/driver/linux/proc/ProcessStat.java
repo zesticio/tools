@@ -1,26 +1,3 @@
-/*
- * MIT License
- *
- * Copyright (c) 2010 - 2021 The OSHI Project Contributors: https://github.com/oshi/oshi/graphs/contributors
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 package com.zestic.system.driver.linux.proc;
 
 import com.zestic.system.annotation.concurrent.ThreadSafe;
@@ -39,7 +16,8 @@ import java.util.stream.Collectors;
 /*
  * Utility to read process statistics from {@code /proc/[pid]/stat}
  */
-@ThreadSafe public final class ProcessStat {
+@ThreadSafe
+public final class ProcessStat {
 
     /*
      * Constant defining the number of integer values in {@code /proc/pid/stat}. 2.6
@@ -177,8 +155,8 @@ import java.util.stream.Collectors;
     public static List<Integer> getThreadIds(int pid) {
         File[] threads = listNumericFiles(String.format(ProcPath.TASK_PATH, pid));
         return Arrays.stream(threads)
-            .map(thread -> ParseUtil.parseIntOrDefault(thread.getName(), 0))
-            .filter(threadId -> threadId != pid).collect(Collectors.toList());
+                .map(thread -> ParseUtil.parseIntOrDefault(thread.getName(), 0))
+                .filter(threadId -> threadId != pid).collect(Collectors.toList());
     }
 
     private static File[] listNumericFiles(String path) {
@@ -191,8 +169,7 @@ import java.util.stream.Collectors;
      * Returns Enum STATE for the state value obtained from status file of any
      * process/thread.
      *
-     * @param stateValue
-     *            state value from the status file
+     * @param stateValue state value from the status file
      * @return OSProcess.State
      */
     public static OSProcess.State getState(char stateValue) {

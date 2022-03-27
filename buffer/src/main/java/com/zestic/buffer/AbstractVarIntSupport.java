@@ -1,25 +1,14 @@
-/*
- * Copyright (C) 2010, FuseSource Corp.  All rights reserved.
- */
 package com.zestic.buffer;
 
 import java.io.IOException;
 import java.net.ProtocolException;
 
-/*
- *
- * @author <a href="https://www.zestic.io">Deebendu Kumar</a>
- */
 abstract public class AbstractVarIntSupport {
 
     abstract protected byte readByte() throws IOException;
 
     abstract protected void writeByte(int value) throws IOException;
 
-    /*
-     * Read a raw Varint from the stream. If larger than 32 bits, discard the
-     * upper bits.
-     */
     public int readVarInt() throws IOException {
         byte tmp = readByte();
         if (tmp >= 0) {

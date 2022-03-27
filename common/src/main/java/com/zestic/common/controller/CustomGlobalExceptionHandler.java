@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(ApplicationRuntimeException.class);
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(CustomGlobalExceptionHandler.class);
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
