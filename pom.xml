@@ -23,62 +23,16 @@
         <module>json</module>
         <module>buffer</module>
         <module>dispatch</module>
-        <module>retrofit</module>
         <module>common</module>
         <module>jredis</module>
     </modules>
 
     <properties>
         <tests.skip>true</tests.skip>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.testSource>11</maven.compiler.testSource>
-        <maven.compiler.testTarget>11</maven.compiler.testTarget>
-        <java.version>11</java.version>
-
-        <copyright>2019 - 2022</copyright>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
-
-        <junit.version>5.6.2</junit.version>
-        <lombok.version>1.18.22</lombok.version>
         <jna.version>5.9.0</jna.version>
-
         <bouncycastle.version>1.69</bouncycastle.version>
-        <jackson.core.version>2.11.4</jackson.core.version>
-        <jackson.datatype.version>2.5.1</jackson.datatype.version>
         <asm-version>3.1</asm-version>
         <osgi-version>4.2.0</osgi-version>
-
-        <org.apache.logging.log4j.version>2.11.1</org.apache.logging.log4j.version>
-
-        <spring-boot.version>2.0.8.RELEASE</spring-boot.version>
-        <okhttp.version>4.0.1</okhttp.version>
-        <retrofit.version>2.9.0</retrofit.version>
-        <spring-cloud.version>2020.0.0</spring-cloud.version>
-
-        <springfox.swagger2.version>2.9.2</springfox.swagger2.version>
     </properties>
-
-    <dependencies>
-        <!--Log4j dependency-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-log4j</artifactId>
-            <version>1.3.8.RELEASE</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 
 </project>

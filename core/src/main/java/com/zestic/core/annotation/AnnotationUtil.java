@@ -11,9 +11,6 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
- * @author <a href="https://www.zestic.io">Deebendu Kumar</a>
- */
 public class AnnotationUtil {
 
     public static CombinationAnnotationElement toCombination(AnnotatedElement annotationEle) {

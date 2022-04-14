@@ -6,12 +6,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-/*
- * 全局公共线程池<br>
- * 此线程池是一个无限线程池，即加入的线程不等待任何线程，直接执行
- *
- * @author <a href="https://www.zestic.io">Deebendu Kumar</a>
- */
 public class GlobalThreadPool {
     private static ExecutorService executor;
 
@@ -22,9 +16,6 @@ public class GlobalThreadPool {
     private GlobalThreadPool() {
     }
 
-    /*
-     * 初始化全局线程池
-     */
     synchronized public static void init() {
         if (null != executor) {
             executor.shutdownNow();
@@ -32,11 +23,6 @@ public class GlobalThreadPool {
         executor = ExecutorBuilder.create().useSynchronousQueue().build();
     }
 
-    /*
-     * 关闭公共线程池
-     *
-     * @param isNow 是否立即关闭而不等待正在执行的线程
-     */
     synchronized public static void shutdown(boolean isNow) {
         if (null != executor) {
             if (isNow) {

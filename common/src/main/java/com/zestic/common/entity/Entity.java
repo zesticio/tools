@@ -24,4 +24,8 @@ public abstract class Entity {
         }
         return json;
     }
+
+    public String debugString() {
+        return new String("");
+    }
 }
