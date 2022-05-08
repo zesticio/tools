@@ -5,7 +5,7 @@ import java.util.Optional;
 /**
  * @author deebendukumar
  */
-public interface ApplicationContext {
+public interface Application {
 
     Object register(String key, Object value);
 

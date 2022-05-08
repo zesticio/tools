@@ -1,22 +1,26 @@
 package com.zestic.common.context;
 
+import org.springframework.context.ApplicationContext;
+
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author deebendukumar
  */
-public class ApplicationContextImpl extends ConcurrentHashMap<String, Object> implements ApplicationContext {
+public class ApplicationImpl extends ConcurrentHashMap<String, Object> implements Application {
     private static final long serialVersionUID = -5865286831705661141L;
 
-    private static ApplicationContextImpl _instance;
+    private static ApplicationImpl _instance;
+    private ApplicationContext context;
 
-    private ApplicationContextImpl() {
+
+    private ApplicationImpl() {
     }
 
-    public static ApplicationContextImpl getInstance() {
+    public static ApplicationImpl getInstance() {
         if (_instance == null) {
-            _instance = new ApplicationContextImpl();
+            _instance = new ApplicationImpl();
         }
         return _instance;
     }
@@ -45,5 +49,13 @@ public class ApplicationContextImpl extends ConcurrentHashMap<String, Object> im
     public Boolean empty() {
         clear();
         return true;
+    }
+
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return context;
     }
 }

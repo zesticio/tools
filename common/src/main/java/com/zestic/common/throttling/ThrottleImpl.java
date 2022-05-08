@@ -5,14 +5,16 @@ import java.util.TimerTask;
 
 public class ThrottleImpl implements Throttler {
 
-    private final int throughput;
-    private final Handler handler;
-    private final Tenant tenant;
+    private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ThrottleImpl.class);
 
-    public ThrottleImpl(int throughput, Tenant tenant, Handler handler) {
+    private final String name;
+    private final Integer throughput;
+    private final Counter counter;
+
+    public ThrottleImpl(String name, Integer throughput, Counter counter) {
+        this.name = name;
         this.throughput = throughput;
-        this.handler = handler;
-        this.tenant = tenant;
+        this.counter = counter;
     }
 
     @Override
@@ -22,9 +24,8 @@ public class ThrottleImpl implements Throttler {
 
             @Override
             public void run() {
-            	System.err.println(tenant.getName());
-                handler.reset(tenant.getName());
-               
+                logger.info(name + " throughput [" + counter.get() + "]");
+                counter.reset();
             }
         }, 0, 1000);
     }

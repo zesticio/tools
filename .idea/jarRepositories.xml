@@ -62,9 +62,19 @@
       <option name="url" value="file:///C:\\Users\\deebe\\.m2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="org.ceva.repo.snapshot" />
+      <option name="name" value="org.ceva.repo.snapshot" />
+      <option name="url" value="https://artifactory.logistics.corp/artifactory/libs-snapshot/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="spring-milestones" />
       <option name="name" value="Spring Milestones" />
       <option name="url" value="https://repo.spring.io/milestone" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="org.ceva.repo.release" />
+      <option name="name" value="org.ceva.repo.release" />
+      <option name="url" value="https://artifactory.logistics.corp/artifactory/libs-release/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="jboss.community" />
@@ -79,6 +89,11 @@
     <remote-repository>
       <option name="id" value="ceva-central" />
       <option name="name" value="ceva-central" />
+      <option name="url" value="https://artifactory.logistics.corp/artifactory/libs-release" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
       <option name="url" value="https://artifactory.logistics.corp/artifactory/libs-release" />
     </remote-repository>
   </component>
