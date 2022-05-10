@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  */
 public abstract class SimpleIoAction implements IoAction<ByteBuffer> {
 
-	private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AcceptHandler.class);
+	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AcceptHandler.class);
 
 	@Override
 	public void accept(AioSession session) {
@@ -19,6 +19,6 @@ public abstract class SimpleIoAction implements IoAction<ByteBuffer> {
 
 	@Override
 	public void failed(Throwable exc, AioSession session) {
-		logger.error(exc);
+		logger.error("", exc);
 	}
 }

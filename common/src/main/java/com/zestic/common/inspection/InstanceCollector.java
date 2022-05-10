@@ -1,9 +1,27 @@
+/*
+ * Version:  1.0.0
+ *
+ * Authors:  Kumar <Deebendu Kumar>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zestic.common.inspection;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.zestic.common.utils.ClassInspectionUtil;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,13 +32,14 @@ import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.Iterables.filter;
 
 /**
- * Collecting instances of a given interface. Instances can be Enum constants. Normal classes are just constructed with their defulat constrcutor.
+ * Collecting instances of a given interface. Instances can be Enum constants.
+ * Normal classes are just constructed with their defulat constrcutor.
  *
  * @param <T>
  */
 public class InstanceCollector<T> {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private final Logger logger = org.slf4j.LoggerFactory.getLogger(getClass());
     private final Set<T> _instances;
 
     public InstanceCollector(Class<T> interfaceClass, String basePackage) {

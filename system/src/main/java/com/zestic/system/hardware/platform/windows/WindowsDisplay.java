@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Immutable final class WindowsDisplay extends AbstractDisplay {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private static final SetupApi SU = SetupApi.INSTANCE;
     private static final Advapi32 ADV = Advapi32.INSTANCE;

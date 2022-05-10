@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 @ThreadSafe
 public abstract class AbstractCentralProcessor implements CentralProcessor {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AbstractCentralProcessor.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AbstractCentralProcessor.class);
 
     private final Supplier<ProcessorIdentifier> cpuid = Memoizer.memoize(this::queryProcessorId);
     private final Supplier<Long> maxFreq =

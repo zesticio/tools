@@ -20,7 +20,7 @@ import java.util.*;
 @ThreadSafe
 public final class HkeyPerformanceDataUtil {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     /*
      * Do a one-time lookup of the HKEY_PERFORMANCE_TEXT counter indices and store

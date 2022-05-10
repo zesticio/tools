@@ -30,7 +30,7 @@ import static com.zestic.system.util.Memoizer.memoize;
 @ThreadSafe
 final class MacCentralProcessor extends AbstractCentralProcessor {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final int ROSETTA_CPUTYPE = 0x00000007;
     private static final int ROSETTA_CPUFAMILY = 0x573b5eec;
     private static final int M1_CPUTYPE = 0x0100000C;

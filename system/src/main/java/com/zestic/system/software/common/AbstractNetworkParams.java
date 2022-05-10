@@ -18,7 +18,7 @@ import java.util.List;
 @ThreadSafe
 public abstract class AbstractNetworkParams implements NetworkParams {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AbstractNetworkParams.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractNetworkParams.class);
     private static final String NAMESERVER = "nameserver";
 
     /*

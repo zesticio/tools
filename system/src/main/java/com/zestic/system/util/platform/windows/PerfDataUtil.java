@@ -13,7 +13,6 @@ import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.util.FormatUtil;
 import com.zestic.system.util.ParseUtil;
 import com.zestic.system.util.Util;
-import org.apache.log4j.Priority;
 
 /*
  * Helper class to centralize the boilerplate portions of PDH counter setup and
@@ -22,7 +21,7 @@ import org.apache.log4j.Priority;
 @ThreadSafe
 public final class PerfDataUtil {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PerfCounterQuery.class);
 
     private static final DWORD_PTR PZERO = new DWORD_PTR(0);
     private static final DWORDByReference PDH_FMT_RAW =
@@ -68,10 +67,8 @@ public final class PerfDataUtil {
                     PDH.PdhCollectQueryData(query.getValue());
         }
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.warn("Failed to update counter. Error code: {}" +
-                        String.format(FormatUtil.formatError(ret)));
-            }
+            LOG.warn("Failed to update counter. Error code: {}" +
+                    String.format(FormatUtil.formatError(ret)));
             return 0L;
         }
         // Perf Counter timestamp is in local time
@@ -89,10 +86,8 @@ public final class PerfDataUtil {
     public static boolean openQuery(HANDLEByReference q) {
         int ret = PDH.PdhOpenQuery(null, PZERO, q);
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.error("Failed to open PDH Query. Error code: {}" +
-                        String.format(FormatUtil.formatError(ret)));
-            }
+            LOG.error("Failed to open PDH Query. Error code: {}" +
+                    String.format(FormatUtil.formatError(ret)));
             return false;
         }
         return true;
@@ -119,10 +114,8 @@ public final class PerfDataUtil {
         PDH_RAW_COUNTER counterValue = new PDH_RAW_COUNTER();
         int ret = PDH.PdhGetRawCounterValue(counter.getValue(), PDH_FMT_RAW, counterValue);
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.warn("Failed to get counter. Error code: {}" +
-                        String.format(FormatUtil.formatError(ret)));
-            }
+            LOG.warn("Failed to get counter. Error code: {}" +
+                    String.format(FormatUtil.formatError(ret)));
             return ret;
         }
         return counterValue.FirstValue;
@@ -143,9 +136,7 @@ public final class PerfDataUtil {
                 PDH.PdhAddEnglishCounter(query.getValue(), path, PZERO, p) :
                 PDH.PdhAddCounter(query.getValue(), path, PZERO, p);
         if (ret != WinError.ERROR_SUCCESS) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.warn("Failed to add PDH Counter: {}, Error code: {}" + path + " " + String.format(FormatUtil.formatError(ret)));
-            }
+            LOG.warn("Failed to add PDH Counter: {}, Error code: {}" + path + " " + String.format(FormatUtil.formatError(ret)));
             return false;
         }
         return true;

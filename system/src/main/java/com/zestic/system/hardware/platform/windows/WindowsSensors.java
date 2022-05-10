@@ -19,7 +19,7 @@ import java.util.Objects;
 @ThreadSafe
 final class WindowsSensors extends AbstractSensors {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private static final String COM_EXCEPTION_MSG = "COM exception: {}";
 

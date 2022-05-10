@@ -50,7 +50,7 @@ public class MacFileSystem extends AbstractFileSystem {
             "com.zestic.system.os.mac.filesystem.volume.excludes";
     public static final String OSHI_MAC_FS_VOLUME_INCLUDES =
             "com.zestic.system.os.mac.filesystem.volume.includes";
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final List<PathMatcher> FS_PATH_EXCLUDES =
             FileSystemUtil.loadAndParseFileSystemConfig(OSHI_MAC_FS_PATH_EXCLUDES);
     private static final List<PathMatcher> FS_PATH_INCLUDES =

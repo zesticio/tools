@@ -17,7 +17,7 @@ import com.zestic.system.jna.platform.unix.freebsd.FreeBsdLibc;
 @ThreadSafe
 public final class BsdSysctlUtil {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private static final String SYSCTL_FAIL = "Failed sysctl call: {}, Error code: {}";
 

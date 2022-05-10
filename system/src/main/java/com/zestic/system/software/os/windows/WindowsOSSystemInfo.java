@@ -12,7 +12,7 @@ import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
  * Windows OS native system information.
  */
 public class WindowsOSSystemInfo {
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     // Populated during call to init
     private SYSTEM_INFO systemInfo = null;

@@ -16,28 +16,19 @@
  * limitations under the License.
  */
 
-package com.zestic.common.jwt;
+package com.zestic.common.exception;
 
-import lombok.Getter;
+public class NotImplementedException extends Exception {
 
-import java.util.Optional;
+    private static final long serialVersionUID = -1771088537167544111L;
 
-@Getter
-public class JwtDecodeResult {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ApplicationRuntimeException.class);
 
-    private final Optional<String> payload;
-    private final Optional<JwtHeader> header;
-    private final Optional<JwtException> exception;
+    private Integer code;
 
-    JwtDecodeResult(String payload, JwtHeader header) {
-        this.payload = Optional.of(payload);
-        this.header = Optional.of(header);
-        this.exception = Optional.empty();
-    }
-
-    JwtDecodeResult(JwtException exception) {
-        this.payload = Optional.empty();
-        this.header = Optional.empty();
-        this.exception = Optional.of(exception);
+    public NotImplementedException(Integer code, String message) {
+        super(message);
+        this.code = code;
+        logger.error(message);
     }
 }

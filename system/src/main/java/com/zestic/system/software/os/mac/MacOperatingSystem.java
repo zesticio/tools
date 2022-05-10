@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
     public static final String MACOS_VERSIONS_PROPERTIES =
         "com.zestic.system.macos.versions.properties";
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final String SYSTEM_LIBRARY_LAUNCH_AGENTS = "/System/Library/LaunchAgents";
     private static final String SYSTEM_LIBRARY_LAUNCH_DAEMONS = "/System/Library/LaunchDaemons";
     private static final long BOOTTIME;

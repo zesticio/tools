@@ -29,7 +29,7 @@ import static com.zestic.system.util.Memoizer.memoize;
 @ThreadSafe
 final class WindowsGlobalMemory extends AbstractGlobalMemory {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(WindowsVirtualMemory.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WindowsVirtualMemory.class);
 
     private static final boolean IS_WINDOWS10_OR_GREATER = VersionHelpers.IsWindows10OrGreater();
 

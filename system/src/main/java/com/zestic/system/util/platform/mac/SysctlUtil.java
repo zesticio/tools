@@ -15,7 +15,7 @@ import com.zestic.system.jna.platform.mac.SystemB;
 @ThreadSafe
 public final class SysctlUtil {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(SysctlUtil.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SysctlUtil.class);
 
     private static final String SYSCTL_FAIL = "Failed sysctl call: {}, Error code: {}";
 

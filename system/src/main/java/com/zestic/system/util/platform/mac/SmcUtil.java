@@ -14,7 +14,6 @@ import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.jna.platform.mac.IOKit;
 import com.zestic.system.jna.platform.mac.SystemB;
 import com.zestic.system.util.ParseUtil;
-import org.apache.log4j.Priority;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
     public static final byte SMC_CMD_READ_BYTES = 5;
     public static final byte SMC_CMD_READ_KEYINFO = 9;
     public static final int KERNEL_INDEX_SMC = 2;
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final IOKit IO = IOKit.INSTANCE;
     /*
      * Byte array used for matching return type
@@ -64,7 +63,7 @@ import java.util.concurrent.ConcurrentHashMap;
             smcService.release();
             if (result == 0) {
                 return new IOConnect(connPtr.getValue());
-            } else if (LOG.isEnabledFor(Priority.ERROR)) {
+            } else {
                 LOG.error(
                     String.format("Unable to open connection to AppleSMC service. Error: 0x%08x",
                         result));

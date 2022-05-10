@@ -33,7 +33,7 @@ import java.util.Map;
  */
 @ThreadSafe final class WindowsCentralProcessor extends AbstractCentralProcessor {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(WindowsCentralProcessor.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WindowsCentralProcessor.class);
 
     // populated by initProcessorCounts called by the parent constructor
     private Map<String, Integer> numaNodeProcToLogicalProcMap;

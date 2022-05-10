@@ -31,7 +31,7 @@ public final class MacHWDiskStore extends AbstractHWDiskStore {
     private static final CoreFoundation CF = CoreFoundation.INSTANCE;
     private static final DiskArbitration DA = DiskArbitration.INSTANCE;
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(MacHWDiskStore.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(MacHWDiskStore.class);
 
     private long reads = 0L;
     private long readBytes = 0L;

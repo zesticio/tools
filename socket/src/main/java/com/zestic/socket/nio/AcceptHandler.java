@@ -14,7 +14,7 @@ import java.nio.channels.SocketChannel;
  */
 public class AcceptHandler implements CompletionHandler<ServerSocketChannel, NioServer> {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(com.zestic.socket.aio.AcceptHandler.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(com.zestic.socket.aio.AcceptHandler.class);
 
     @Override
     public void completed(ServerSocketChannel serverSocketChannel, NioServer nioServer) {
@@ -33,7 +33,7 @@ public class AcceptHandler implements CompletionHandler<ServerSocketChannel, Nio
 
     @Override
     public void failed(Throwable exc, NioServer nioServer) {
-        logger.error(exc);
+        logger.error("", exc);
     }
 
 }

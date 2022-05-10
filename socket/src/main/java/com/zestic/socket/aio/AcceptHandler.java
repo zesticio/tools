@@ -12,7 +12,7 @@ import java.nio.channels.CompletionHandler;
  */
 public class AcceptHandler implements CompletionHandler<AsynchronousSocketChannel, AioServer> {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AcceptHandler.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AcceptHandler.class);
 
     @Override
     public void completed(AsynchronousSocketChannel socketChannel, AioServer aioServer) {
@@ -31,7 +31,7 @@ public class AcceptHandler implements CompletionHandler<AsynchronousSocketChanne
 
     @Override
     public void failed(Throwable exc, AioServer aioServer) {
-        logger.error(exc);
+        logger.error("", exc);
     }
 
 }

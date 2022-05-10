@@ -46,7 +46,7 @@ public final class ParseUtil {
      * Constant <code>forwardSlash</code>
      */
     public static final Pattern slash = Pattern.compile("\\/");
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(ParseUtil.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(ParseUtil.class);
     private static final String DEFAULT_LOG_MSG = "{} didn't parse. Returning default. {}";
     /*
      * Used for matching

@@ -19,7 +19,7 @@ import java.lang.reflect.Type;
  */
 public abstract class AbsSetting implements OptNullBasicTypeFromStringGetter<String>, Serializable {
     private static final long serialVersionUID = 6200156302595905863L;
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AbsSetting.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AbsSetting.class);
 
     /*
      * 数组类型值默认分隔符

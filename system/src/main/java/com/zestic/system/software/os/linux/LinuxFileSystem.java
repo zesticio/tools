@@ -41,7 +41,7 @@ public class LinuxFileSystem extends AbstractFileSystem {
             "com.zestic.system.os.linux.filesystem.volume.excludes";
     public static final String OSHI_LINUX_FS_VOLUME_INCLUDES =
             "com.zestic.system.os.linux.filesystem.volume.includes";
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final List<PathMatcher> FS_PATH_EXCLUDES =
             FileSystemUtil.loadAndParseFileSystemConfig(OSHI_LINUX_FS_PATH_EXCLUDES);
     private static final List<PathMatcher> FS_PATH_INCLUDES =

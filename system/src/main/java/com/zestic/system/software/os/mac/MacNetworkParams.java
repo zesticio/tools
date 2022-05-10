@@ -10,7 +10,6 @@ import com.zestic.system.jna.platform.unix.CLibrary.Addrinfo;
 import com.zestic.system.software.common.AbstractNetworkParams;
 import com.zestic.system.util.ExecutingCommand;
 import com.zestic.system.util.ParseUtil;
-import org.apache.log4j.Priority;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,7 +23,7 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
 @ThreadSafe
 final class MacNetworkParams extends AbstractNetworkParams {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(MacNetworkParams.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(MacNetworkParams.class);
 
     private static final SystemB SYS = SystemB.INSTANCE;
 
@@ -46,9 +45,7 @@ final class MacNetworkParams extends AbstractNetworkParams {
         PointerByReference ptr = new PointerByReference();
         int res = SYS.getaddrinfo(hostname, null, hint, ptr);
         if (res > 0) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.error("Failed getaddrinfo(): {}" + SYS.gai_strerror(res));
-            }
+            LOG.error("Failed getaddrinfo(): {}" + SYS.gai_strerror(res));
             return "";
         }
         Addrinfo info = new Addrinfo(ptr.getValue());

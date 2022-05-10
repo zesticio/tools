@@ -11,7 +11,6 @@ import com.zestic.system.annotation.concurrent.ThreadSafe;
 import com.zestic.system.hardware.platform.unix.aix.AixNetworkIF;
 import com.zestic.system.util.FormatUtil;
 import com.zestic.system.util.Util;
-import org.apache.log4j.Priority;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @ThreadSafe
 public final class KstatUtil {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private static final LibKstat KS = LibKstat.INSTANCE;
 
@@ -107,11 +106,9 @@ public final class KstatUtil {
         }
         Pointer p = KS.kstat_data_lookup(ksp, name);
         if (p == null) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-//                LOG.error("Failed lo lookup kstat value on {}:{}:{} for key {}",
-//                    Native.toString(ksp.ks_module, StandardCharsets.US_ASCII), ksp.ks_instance,
-//                    Native.toString(ksp.ks_name, StandardCharsets.US_ASCII), name);
-            }
+            LOG.error("Failed lo lookup kstat value on {}:{}:{} for key {}",
+                    Native.toString(ksp.ks_module, StandardCharsets.US_ASCII), ksp.ks_instance,
+                    Native.toString(ksp.ks_name, StandardCharsets.US_ASCII), name);
             return 0L;
         }
         KstatNamed data = new KstatNamed(p);

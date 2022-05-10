@@ -21,7 +21,7 @@ import java.util.List;
 @Immutable
 final class MacDisplay extends AbstractDisplay {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(MacDisplay.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MacDisplay.class);
 
     /*
      * Constructor for MacDisplay.

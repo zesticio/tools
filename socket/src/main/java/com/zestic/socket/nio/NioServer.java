@@ -19,7 +19,7 @@ import java.util.Iterator;
  *
  */
 public class NioServer implements Closeable {
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(com.zestic.socket.aio.AcceptHandler.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(com.zestic.socket.aio.AcceptHandler.class);
 
     private static final AcceptHandler ACCEPT_HANDLER = new AcceptHandler();
 
@@ -138,7 +138,7 @@ public class NioServer implements Closeable {
                 handler.handle(socketChannel);
             } catch (Exception e) {
                 IoUtil.close(socketChannel);
-                logger.error(e);
+                logger.error("", e);
             }
         }
     }

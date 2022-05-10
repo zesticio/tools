@@ -30,7 +30,7 @@ public final class PerfCounterQuery {
     public static final String TOTAL_INSTANCES = "*_Total";
     public static final String NOT_TOTAL_INSTANCE = "^" + TOTAL_INSTANCE;
     public static final String NOT_TOTAL_INSTANCES = "^" + TOTAL_INSTANCES;
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PerfCounterQuery.class);
     private static final boolean IS_VISTA_OR_GREATER = VersionHelpers.IsWindowsVistaOrGreater();
     // Use a thread safe set to cache failed pdh queries
     private static final Set<String> failedQueryCache = ConcurrentHashMap.newKeySet();

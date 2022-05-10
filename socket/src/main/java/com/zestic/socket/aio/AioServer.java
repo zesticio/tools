@@ -21,7 +21,7 @@ import java.nio.channels.AsynchronousServerSocketChannel;
  */
 public class AioServer implements Closeable {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(AcceptHandler.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AcceptHandler.class);
 
     private static final AcceptHandler ACCEPT_HANDLER = new AcceptHandler();
 

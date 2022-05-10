@@ -44,7 +44,7 @@ public class WindowsOperatingSystem extends AbstractOperatingSystem {
 
     public static final String OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED =
             "com.zestic.system.os.windows.procstate.suspended";
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final boolean USE_PROCSTATE_SUSPENDED =
             GlobalConfig.get(OSHI_OS_WINDOWS_PROCSTATE_SUSPENDED, false);
 

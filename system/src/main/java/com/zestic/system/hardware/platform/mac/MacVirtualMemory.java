@@ -24,7 +24,7 @@ import static com.zestic.system.util.Memoizer.memoize;
 @ThreadSafe
 final class MacVirtualMemory extends AbstractVirtualMemory {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private final MacGlobalMemory global;
 

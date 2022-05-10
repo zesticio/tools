@@ -2,27 +2,12 @@ package com.zestic.core.builder;
 
 import java.io.Serializable;
 
-/*
- * 包装唯一键（System.identityHashCode()）使对象只有和自己 equals
- * <p>
- * 此对象用于消除小概率下System.identityHashCode()产生的ID重复问题。
- * <p>
- * 来自于Apache-Commons-Lang3
- *
- * @author <a href="https://www.zestic.io">Deebendu Kumar</a>，Apache-Commons
- * @since 4.2.2
- */
 final class IDKey implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Object value;
     private final int id;
 
-    /*
-     * 构造
-     *
-     * @param obj 计算唯一ID的对象
-     */
     public IDKey(final Object obj) {
         id = System.identityHashCode(obj);
         // There have been some cases (LANG-459) that return the

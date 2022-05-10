@@ -23,7 +23,7 @@ import java.util.concurrent.TimeoutException;
 @ThreadSafe
 public class WmiQueryHandler {
 
-    private static final org.apache.log4j.Logger logger = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PerfCounterQuery.class);
     private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     private static int globalTimeout = GlobalConfig.get("com.zestic.system.util.wmi.timeout", -1);

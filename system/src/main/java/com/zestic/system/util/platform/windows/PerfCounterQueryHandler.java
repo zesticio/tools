@@ -4,7 +4,6 @@ package com.zestic.system.util.platform.windows;
 import com.sun.jna.platform.win32.WinNT.HANDLEByReference;
 import com.zestic.system.annotation.concurrent.NotThreadSafe;
 import com.zestic.system.util.FormatUtil;
-import org.apache.log4j.Priority;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,7 @@ import java.util.Map;
 @NotThreadSafe
 public final class PerfCounterQueryHandler implements AutoCloseable {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PerfCounterQuery.class);
 
     // Map of counter handles
     private Map<PerfDataUtil.PerfCounter, HANDLEByReference> counterHandleMap = new HashMap<>();
@@ -110,16 +109,12 @@ public final class PerfCounterQueryHandler implements AutoCloseable {
      */
     public long queryCounter(PerfDataUtil.PerfCounter counter) {
         if (!counterHandleMap.containsKey(counter)) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.warn("Counter {} does not exist to query." + counter.getCounterPath());
-            }
+            LOG.warn("Counter {} does not exist to query." + counter.getCounterPath());
             return 0;
         }
         long value = PerfDataUtil.queryCounter(counterHandleMap.get(counter));
         if (value < 0) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.warn("Error querying counter {" + counter.getCounterPath() + "}: {" + String.format(FormatUtil.formatError((int) value)) + "}");
-            }
+            LOG.warn("Error querying counter {" + counter.getCounterPath() + "}: {" + String.format(FormatUtil.formatError((int) value)) + "}");
             return 0L;
         }
         return value;

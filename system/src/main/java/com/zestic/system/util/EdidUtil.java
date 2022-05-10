@@ -15,7 +15,7 @@ import java.util.Arrays;
 @ThreadSafe
 public final class EdidUtil {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterQuery.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PerfCounterQuery.class);
 
     private EdidUtil() {
     }

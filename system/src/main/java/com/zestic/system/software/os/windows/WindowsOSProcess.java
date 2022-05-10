@@ -45,7 +45,7 @@ public class WindowsOSProcess extends AbstractOSProcess {
     // Config param to enable cache
     public static final String OSHI_OS_WINDOWS_COMMANDLINE_BATCH =
             "com.zestic.system.os.windows.commandline.batch";
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final boolean USE_BATCH_COMMANDLINE =
             GlobalConfig.get(OSHI_OS_WINDOWS_COMMANDLINE_BATCH, false);
 

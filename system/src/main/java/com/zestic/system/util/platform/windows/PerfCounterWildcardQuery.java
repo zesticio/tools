@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @ThreadSafe
 public final class PerfCounterWildcardQuery {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(PerfCounterWildcardQuery.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(PerfCounterWildcardQuery.class);
 
     // Use a thread safe set to cache failed pdh queries
     private static final Set<String> failedQueryCache = ConcurrentHashMap.newKeySet();

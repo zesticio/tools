@@ -30,7 +30,7 @@ public class FreeBsdOSProcess extends AbstractOSProcess {
     static final String PS_THREAD_COLUMNS =
             Arrays.stream(PsThreadColumns.values()).map(Enum::name).map(String::toLowerCase)
                     .collect(Collectors.joining(","));
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(FreeBsdOSProcess.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(FreeBsdOSProcess.class);
     private static final int ARGMAX = BsdSysctlUtil.sysctl("kern.argmax", 0);
     private Supplier<Integer> bitness = Memoizer.memoize(this::queryBitness);
     private Supplier<List<String>> arguments = Memoizer.memoize(this::queryArguments);

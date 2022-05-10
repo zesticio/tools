@@ -34,7 +34,7 @@ public class LinuxOperatingSystem extends AbstractOperatingSystem {
 
     // Package private for access from LinuxOSProcess
     static final long BOOTTIME;
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
     private static final String OS_RELEASE_LOG = "os-release: {}";
     private static final String LSB_RELEASE_A_LOG = "lsb_release -a: {}";
     private static final String LSB_RELEASE_LOG = "lsb-release: {}";

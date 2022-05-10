@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 @ThreadSafe
 public final class FileUtil {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private static final String READING_LOG = "Reading file {}";
     private static final String READ_LOG = "Read {}";

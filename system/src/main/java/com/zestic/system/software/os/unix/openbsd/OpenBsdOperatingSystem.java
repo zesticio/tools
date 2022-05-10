@@ -28,7 +28,7 @@ public class OpenBsdOperatingSystem extends AbstractOperatingSystem {
     static final String PS_COMMAND_ARGS =
             Arrays.stream(PsKeywords.values()).map(Enum::name).map(String::toLowerCase)
                     .collect(Collectors.joining(","));
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(OpenBsdOperatingSystem.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(OpenBsdOperatingSystem.class);
     private static final long BOOTTIME = querySystemBootTime();
 
     private static List<OSProcess> getProcessListFromPS(int pid) {

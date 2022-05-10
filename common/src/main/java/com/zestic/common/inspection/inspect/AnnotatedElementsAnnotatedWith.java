@@ -1,3 +1,21 @@
+/*
+ * Version:  1.0.0
+ *
+ * Authors:  Kumar <Deebendu Kumar>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.zestic.common.inspection.inspect;
 
 import com.google.common.base.Function;
@@ -11,7 +29,7 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.FieldInfo;
 import javassist.bytecode.MethodInfo;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -22,14 +40,8 @@ import java.util.*;
 
 import static com.google.common.collect.Collections2.transform;
 
-/**
- * An inspector that checks if a class or filed within or a method within is
- * annotated with a specific annotation and if so collects it.
- *
- * @author hoersch
- */
 public class AnnotatedElementsAnnotatedWith implements ClassInspector<ClassAnnotationMetadata> {
-    private static final Logger logger = Logger.getLogger(AnnotatedElementsAnnotatedWith.class);
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(AnnotatedElementsAnnotatedWith.class);
 
     private Class<? extends Annotation> _annotation;
 
@@ -37,9 +49,6 @@ public class AnnotatedElementsAnnotatedWith implements ClassInspector<ClassAnnot
 
     private Collection<ClassAnnotationMetadata> _matches;
 
-    /**
-     * @param annotation
-     */
     public AnnotatedElementsAnnotatedWith(Class<? extends Annotation> annotation) {
         _annotation = annotation;
     }

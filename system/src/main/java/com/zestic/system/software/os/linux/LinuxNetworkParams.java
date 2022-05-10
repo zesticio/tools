@@ -11,7 +11,6 @@ import com.zestic.system.jna.platform.unix.CLibrary;
 import com.zestic.system.software.common.AbstractNetworkParams;
 import com.zestic.system.util.ExecutingCommand;
 import com.zestic.system.util.ParseUtil;
-import org.apache.log4j.Priority;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,7 +23,7 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
  */
 @ThreadSafe final class LinuxNetworkParams extends AbstractNetworkParams {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.LogManager.getLogger(AixNetworkIF.class);
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AixNetworkIF.class);
 
     private static final LinuxLibc LIBC = LinuxLibc.INSTANCE;
 
@@ -45,9 +44,7 @@ import static com.sun.jna.platform.unix.LibCAPI.HOST_NAME_MAX;
         PointerByReference ptr = new PointerByReference();
         int res = LIBC.getaddrinfo(hostname, null, hint, ptr);
         if (res > 0) {
-            if (LOG.isEnabledFor(Priority.ERROR)) {
-                LOG.error("Failed getaddrinfo(): {}" + LIBC.gai_strerror(res));
-            }
+            LOG.error("Failed getaddrinfo(): {}" + LIBC.gai_strerror(res));
             return "";
         }
         CLibrary.Addrinfo info = new CLibrary.Addrinfo(ptr.getValue());
