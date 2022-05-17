@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Error code
+ * HTTP Error Codes
  */
-public enum Error {
+public enum HTTPErrorCodes {
 
     SUCCESS(200, "Ok"),
     CREATED(201, "Successfully created"),
@@ -46,10 +46,10 @@ public enum Error {
     NOT_IMPLEMENTED(501, "Not Implemented"),
     TIMEOUT(504, "Timeout");
 
-    private static final Map<Integer, Error> LOOKUP = new HashMap<Integer, Error>();
+    private static final Map<Integer, HTTPErrorCodes> LOOKUP = new HashMap<Integer, HTTPErrorCodes>();
 
     static {
-        for (final Error enumeration : Error.values()) {
+        for (final HTTPErrorCodes enumeration : HTTPErrorCodes.values()) {
             LOOKUP.put(enumeration.getCode(), enumeration);
         }
     }
@@ -58,7 +58,7 @@ public enum Error {
 
     private final String message;
 
-    private Error(final Integer code, final String message) {
+    private HTTPErrorCodes(final Integer code, final String message) {
         this.code = code;
         this.message = message;
     }

@@ -18,20 +18,23 @@
 
 package com.zestic.common;
 
-import com.zestic.common.utils.Error;
+import com.zestic.common.utils.HTTPErrorCodes;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * runtime error code starting from 0x800000
+ */
 public enum Constants {
 
     ROK(0x000000, "Success"),
     RTE_METHOD_NOT_IMPL(0x800001, "Runtime exception, Method not implemented");
 
-    private static final Map<Integer, Error> LOOKUP = new HashMap<Integer, Error>();
+    private static final Map<Integer, HTTPErrorCodes> LOOKUP = new HashMap<Integer, HTTPErrorCodes>();
 
     static {
-        for (final Error enumeration : Error.values()) {
+        for (final HTTPErrorCodes enumeration : HTTPErrorCodes.values()) {
             LOOKUP.put(enumeration.getCode(), enumeration);
         }
     }

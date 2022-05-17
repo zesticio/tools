@@ -16,9 +16,14 @@
  * limitations under the License.
  */
 
-package com.zestic.common.throttling;
+package com.zestic.common.ratelimit;
 
-public interface Throttler {
+import com.zestic.common.utils.DateUtil;
 
-    void start();
+import java.util.Timer;
+import java.util.TimerTask;
+
+public interface RateLimiterListener {
+
+    void refill();
 }

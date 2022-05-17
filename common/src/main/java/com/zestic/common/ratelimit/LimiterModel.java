@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.zestic.common.entity;
+package com.zestic.common.ratelimit;
 
 import com.zestic.common.utils.HTTPErrorCodes;
 
@@ -24,12 +24,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Error code for USER module.
+ * runtime error code starting from 0x800000
  */
-public enum MessageType {
+public enum LimiterModel {
 
-    TEXT_MESSAGE(0x100000, "Test Message"),
-    OBJECT_MESSAGE(0x100001, "Object Message");
+    TOKEN_BUCKET(0x000000, "Token Bucket Algorithm"),
+    LEAKY_BUCKET(0x800001, "Leaky Bucket Algorithm"),
+    BUCKET4J(0x800002, "Bucket4J"),
+    MONITORING(0x800010, "Monitor throughput algorithm");
 
     private static final Map<Integer, HTTPErrorCodes> LOOKUP = new HashMap<Integer, HTTPErrorCodes>();
 
@@ -43,7 +45,7 @@ public enum MessageType {
 
     private final String message;
 
-    private MessageType(final Integer code, final String message) {
+    private LimiterModel(final Integer code, final String message) {
         this.code = code;
         this.message = message;
     }

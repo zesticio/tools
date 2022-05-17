@@ -16,22 +16,20 @@
  * limitations under the License.
  */
 
-package com.zestic.common.throttling;
+package com.zestic.common.ratelimit;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 public final class Counter {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Counter.class);
 
-    private final long RATE_INTERVAL_MILLISECONDS;
     private AtomicInteger index;
 
     public Counter() {
         index = new AtomicInteger(0);
-        RATE_INTERVAL_MILLISECONDS = TimeUnit.SECONDS.toMillis(1);
     }
 
     public Integer increment() {
@@ -45,4 +43,16 @@ public final class Counter {
     public void reset() {
         index = new AtomicInteger(0);
     }
+
+    public void start() {
+
+        new Timer(true).schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                reset();
+            }
+        }, 0, 1000);
+    }
+
 }

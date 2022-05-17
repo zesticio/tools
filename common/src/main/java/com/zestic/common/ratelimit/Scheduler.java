@@ -16,35 +16,26 @@
  * limitations under the License.
  */
 
-package com.zestic.common.throttling;
+package com.zestic.common.ratelimit;
+
+import com.zestic.common.utils.DateUtil;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ThrottleImpl implements Throttler {
+public class Scheduler {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ThrottleImpl.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Scheduler.class);
 
-    private final String name;
-    private final Integer throughput;
-    private final Counter counter;
-
-    public ThrottleImpl(String name, Integer throughput, Counter counter) {
-        this.name = name;
-        this.throughput = throughput;
-        this.counter = counter;
-    }
-
-    @Override
-    public void start() {
-
+    protected void start(long delay, long period, long limit, RateLimiterListener listener) {
+        logger.debug("delay " + delay + " period " + period + " limit " + limit);
         new Timer(true).schedule(new TimerTask() {
 
             @Override
             public void run() {
-                logger.info(name + " throughput [" + counter.get() + "]");
-                counter.reset();
+                logger.debug("Going to refill the bucket " + DateUtil.dateStringFromLocalDate() + " : with " + " " + limit + " tokens");
+                listener.refill();
             }
-        }, 0, 1000);
+        }, delay, period);
     }
 }
